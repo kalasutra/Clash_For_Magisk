@@ -1,0 +1,6 @@
+id=clash_premium
+name=Clash Premium For Magisk
+version=premium 2020.06.27
+versionCode=20200726
+author=shell scripts by kalasutra. clash premium by Dreamacro
+description=clash premium with service scripts for Android.Only supports tun mode transparent proxy.Default disable ipv6.
