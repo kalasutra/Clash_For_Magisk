@@ -66,11 +66,3 @@ You can download the release installer zip file and install it via the Magisk Ma
 ## Uninstall
 
 - Uninstall the module via Magisk Manager App.
-
-
-## Thanks
-- chendefine
-- Dashboard2
-- Dreamacro
-- njallam
-- And everyone who helps
