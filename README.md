@@ -33,7 +33,7 @@ You can download the release installer zip file and install it via the Magisk Ma
 
 ### Manage service start / stop
 
-- Use the `clash_control` command under andoid termux, the available parameters enable|disable|restart, for example, the command for service startup is clash_control enable.
+- Use the `clash_control` command under andoid termux, the available parameters enable|disable|restart, for example, the command for service startup is `clash_control enable`.
 
 - It is recommended to use [Dashboard App](<https://github.com/Dashboard2/Dashboard>) management.
 
