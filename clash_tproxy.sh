@@ -87,7 +87,7 @@ probe_proxy_mode() {
             fi
         done
     done < ${appid_file}
-    echo ${appid_list[*]}
+    # echo ${appid_list[*]}
 }
 
 create_dns_iptables() {

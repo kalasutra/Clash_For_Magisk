@@ -40,8 +40,9 @@ flush_route() {
 wait_clash_listen() {
     wait_count=0
     port_bind_program=$(netstat -antp | grep 7892 | awk '{print $7}' | awk -F '[/]' '{print $2}')
-    while [ "${port_bind_program}" != "clash" ] && [ ${wait_count} -lt 100 ] ; do
+    while [ "${port_bind_program}" != "clash" ] && [ ${wait_count} -lt 30 ] ; do
         sleep 1
+        port_bind_program=$(netstat -antp | grep 7892 | awk '{print $7}' | awk -F '[/]' '{print $2}')
         wait_count=$((${wait_count} + 1))
     done
     if [ "${port_bind_program}" = "clash" ] && probe_clash_alive ; then
@@ -79,7 +80,7 @@ start_service() {
 }
 
 stop_service() {
-    kill -9 `cat ${pid_file}`
+    kill -9 `cat ${pid_file}` || killall ${bin_name} || kill `cat ${pid_file}`
     sleep 1
     del_rule
     flush_route

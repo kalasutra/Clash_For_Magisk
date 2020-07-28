@@ -6,7 +6,7 @@ clash_data_dir="/sdcard/Documents/clash"
 pid_file="${clash_data_dir}/clash.pid"
 
 start_proxy() {
-    ${module_path}/${module_id}/clash_service.sh start
+    ${module_path}/${module_id}/clash_service.sh start && \
     [ -f ${pid_file} ] && ${module_path}/${module_id}/clash_tproxy.sh enable
 }
 
@@ -16,7 +16,7 @@ stop_proxy() {
 }
 
 restart_proxy() {
-    ${module_path}/${module_id}/clash_service.sh restart
+    ${module_path}/${module_id}/clash_service.sh restart && \
     [ -f ${pid_file} ] && ${module_path}/${module_id}/clash_tproxy.sh restart
 }
 
