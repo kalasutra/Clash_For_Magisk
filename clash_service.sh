@@ -58,7 +58,7 @@ probe_clash_alive() {
 
 start_service() {
     if probe_clash_alive ; then
-        return 0
+        exit 0
     elif [ -f ${conf_file} ] && [ -f ${geoip_file} ] && ${bin_name} -d ${clash_data_dir} -t ; then
         chown root:sdcard_rw ${bin_path}
         chmod 6755 ${bin_path}
@@ -99,6 +99,6 @@ case "$1" in
         start_service
         ;;
     *)
-        echo "$0: usage: $0 {start | stop | restart}"
+        echo "$0: usage: $0 { start | stop | restart }"
         ;;
 esac
