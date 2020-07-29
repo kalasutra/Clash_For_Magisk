@@ -31,7 +31,8 @@ create_ap_iptables() {
         iptables -t nat -A AP_PROXY -d ${subnet} -j RETURN
     done
     iptables -t nat -A AP_PROXY -i wlan0 -p tcp -j REDIRECT --to-port ${clash_redir_port}
-    iptables -t nat -I PREROUTING -i wlan0 -p tcp -j AP_PROXY
+    iptables -t nat -I PREROUTING -j AP_PROXY
+    iptables -t nat -I PREROUTING -j DNS
 }
 
 create_proxy_iptables() {
@@ -39,6 +40,7 @@ create_proxy_iptables() {
     iptables -t nat -N FILTER_DNS
 
     iptables -t mangle -A PROXY -m owner --gid-owner ${sdcard_rw_uid} -j RETURN
+    iptables -t nat -A FILTER_DNS -m owner --gid-owner ${sdcard_rw_uid} -j RETURN
 
     probe_proxy_mode
 
@@ -92,7 +94,6 @@ probe_proxy_mode() {
 
 create_dns_iptables() {
     iptables -t nat -N DNS
-    iptables -t nat -A DNS -m owner --gid-owner ${sdcard_rw_uid} -j RETURN
     iptables -t nat -A DNS -p tcp --dport 53 -j REDIRECT --to-port ${clash_dns_port}
     iptables -t nat -A DNS -p udp --dport 53 -j REDIRECT --to-port ${clash_dns_port}
 }
