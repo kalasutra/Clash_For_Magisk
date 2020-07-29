@@ -31,7 +31,9 @@ create_ap_iptables() {
         iptables -t nat -A AP_PROXY -d ${subnet} -j RETURN
     done
     iptables -t nat -A AP_PROXY -i wlan0 -p tcp -j REDIRECT --to-port ${clash_redir_port}
+    iptables -t nat -A AP_PROXY -i rndis0 -p tcp -j REDIRECT --to-port ${clash_redir_port}
     iptables -t nat -I PREROUTING -i wlan0 -p tcp -j AP_PROXY
+    iptables -t nat -I PREROUTING -i rndis0 -p tcp -j AP_PROXY
 }
 
 create_proxy_iptables() {
@@ -109,6 +111,7 @@ flush_iptables() {
     iptables -t nat -X FILTER_DNS
     iptables -t nat -X DNS
     iptables -t nat -D PREROUTING -i wlan0 -p tcp -j AP_PROXY
+    iptables -t nat -D PREROUTING -i rndis0 -p tcp -j AP_PROXY
     iptables -t nat -F AP_PROXY
     iptables -t nat -X AP_PROXY
 }
