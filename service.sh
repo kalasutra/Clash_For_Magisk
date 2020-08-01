@@ -1,16 +1,16 @@
 #!/system/bin/sh
 
-until [ $(getprop sys.boot_completed) -eq 1 ]; do
-  sleep 5
+wait_count=0
+until [ $(getprop sys.boot_completed) -eq 1 ] && [ -d "/sdcard/Documents" ]; do
+  sleep 2
+  wait_count=$((${wait_count} + 1))
+  if [ ${wait_count} -ge 100 ] ; then
+    exit 0
+  fi
 done
-
+clash_control enable
 # default disable ipv6 accept_ra
 echo 0 > /proc/sys/net/ipv6/conf/all/accept_ra
 echo 0 > /proc/sys/net/ipv6/conf/wlan0/accept_ra
 # echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
 # echo 1 > /proc/sys/net/ipv6/conf/wlan0/disable_ipv6
-# start with Android
-until [-d "/sdcard/Documents"];do
-    sleep 1
-    clash_control enable
-done
