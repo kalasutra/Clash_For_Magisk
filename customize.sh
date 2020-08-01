@@ -11,6 +11,9 @@ find /system -name curl > $MODPATH/curl.txt
 if [ ! -s $MODPATH/directory.txt ]; then
    ui_print "Your device does not have a curl command." 
    ui_print "Use local official core."
+   if [ "${ARCH}" ! = "arm64" ] ; then
+      abort "Local core only support ${ARCH} architecture, stop install."
+   fi
 fi
 rm -rf $MODPATH/curl.txt
 
