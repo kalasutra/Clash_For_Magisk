@@ -8,11 +8,11 @@ if [ $BOOTMODE ! = true ]; then
 fi
 
 find /system -name curl > $MODPATH/curl.txt
-if [ ! -s $MODPATH/directory.txt ]; then
-   ui_print "Your device does not have a curl command." 
-   ui_print "Use local official core."
+if [ -p $MODPATH/directory.txt ]; then
+   ui_print "- Your device does not have a curl command." 
+   ui_print "- Use local official core."
    if [ "${ARCH}" ! = "arm64" ] ; then
-      abort "Local core only support ${ARCH} architecture, stop install."
+      abort "- Local core only support ${ARCH} architecture, stop install."
    fi
 fi
 rm -rf $MODPATH/curl.txt
@@ -32,9 +32,6 @@ unzip -j -o "${ZIPFILE}" 'service.sh' -d $MODPATH >&2
 unzip -j -o "${ZIPFILE}" 'uninstall.sh' -d $MODPATH >&2
 unzip -j -o "${ZIPFILE}" 'module.prop' -d $MODPATH >&2
 
-if [ "${latest_version}" = "" ] ; then
-   abort "Error: Connect preview Clash download link failed." 
-fi
 ui_print "- Download latest Clash core ${latest_version}"
 case "${ARCH}" in
   arm)
@@ -50,11 +47,14 @@ case "${ARCH}" in
     download_clash_link="${preview_clash_link}/${latest_version}"
     ;;
 esac
+if [ "${latest_version}" = "" ] ; then
+   abort "- Error: Connect preview Clash download link failed." 
+fi
 curl "${download_clash_link}" -k -L -o "$MODPATH/clash.gz" >&2
 if [ "$?" != "0" ] ; then
-   abort "Error: Download Clash core failed."
+   abort "- Error: Download Clash core failed."
 fi
-ui_print "Extracting Clash core file"
+ui_print "- Extracting Clash core file"
 gzip -d $MODPATH/clash.gz
 mv $MODPATH/clash $MODPATH/system/bin
 
