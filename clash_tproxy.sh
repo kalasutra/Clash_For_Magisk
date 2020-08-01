@@ -99,18 +99,22 @@ create_dns_iptables() {
 }
 
 flush_iptables() {
+    # Delete iptables rules
+    iptables -t nat -D PREROUTING -j AP_PROXY
+    iptables -t nat -D PREROUTING -j DNS
+    # Clear iptables chain
     iptables -t mangle -F OUTPUT
     iptables -t nat -F OUTPUT
     iptables -t mangle -F CLASH
     iptables -t mangle -F PROXY
     iptables -t nat -F FILTER_DNS
     iptables -t nat -F DNS
+    iptables -t nat -F AP_PROXY
+    # Delete iptables chain
     iptables -t mangle -X CLASH
     iptables -t mangle -X PROXY
     iptables -t nat -X FILTER_DNS
     iptables -t nat -X DNS
-    iptables -t nat -D PREROUTING -i wlan0 -p tcp -j AP_PROXY
-    iptables -t nat -F AP_PROXY
     iptables -t nat -X AP_PROXY
 }
 
