@@ -68,8 +68,8 @@ echo ${latest_version} >> $MODPATH/module.prop
 echo "versionCode=40000" >> $MODPATH/module.prop
 echo "author=shell scripts by kalasutra. clash premium by Dreamacro" >> $MODPATH/module.prop
 echo "description=clash premium with service scripts for Android.Only supports tun mode transparent proxy.Default disable ipv6." >> $MODPATH/module.prop
-ui_print "- Files copied"
 
+ui_print "- Set permissions"
 set_perm_recursive $MODPATH 0 0 0755 0644
 set_perm  $MODPATH/service.sh    0  0  0755
 set_perm  $MODPATH/uninstall.sh    0  0  0755
