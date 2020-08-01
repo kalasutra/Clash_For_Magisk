@@ -3,12 +3,12 @@
 # override the official Magisk module installer
 SKIPUNZIP=1
 
-if [ $BOOTMODE = true ]; then
-if [ "${ARCH}" = "arm64" ] ; then
-    ui_print "The module supports ${ARCH} architecture, continue to install."
-else
-    abort "The module does not support ${ARCH} architecture, stop install."
-fi
+if [ $BOOTMODE = true ] ; then
+    if [ "${ARCH}" = "arm64" ] ; then
+        ui_print "The module supports ${ARCH} architecture, continue to install."
+    else
+        abort "The module does not support ${ARCH} architecture, stop install."
+    fi
 else
     abort "! Please install in Magisk Manager"
 fi
@@ -31,7 +31,7 @@ unzip -j -o "${ZIPFILE}" 'module.prop' -d $MODPATH >&2
 
 curl "${clash_link}/${latest_version}" -k -L -o "$MODPATH/clash.gz" >&2
 if [ "$?" != "0" ] ; then
-abort "Error: Download Clash core failed."
+    abort "Error: Download Clash core failed."
 fi
 ui_print "Extracting Clash core file"
 gzip -d $MODPATH/clash.gz
