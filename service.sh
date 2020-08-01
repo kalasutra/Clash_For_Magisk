@@ -4,7 +4,7 @@ wait_count=0
 until [ $(getprop sys.boot_completed) -eq 1 ] && [ -d "/sdcard/Documents" ]; do
   sleep 2
   wait_count=$((${wait_count} + 1))
-  if [ ${wait_count} -ge 10 ] ; then
+  if [ ${wait_count} -ge 100 ] ; then
     exit 0
   fi
 done
