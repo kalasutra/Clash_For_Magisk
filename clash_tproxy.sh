@@ -66,10 +66,10 @@ create_proxy_iptables() {
 }
 
 probe_proxy_mode() {
+    echo "" >> ${appid_file}
     if [ ! -s ${appid_file} ] ; then
         echo "ALL" >> ${appid_file}
     fi
-    echo "" >> ${appid_file}
     sed -i '/^$/d' "${appid_file}"
     if [ -f "${appid_file}" ] ; then
         first_line=$(head -1 ${appid_file})
