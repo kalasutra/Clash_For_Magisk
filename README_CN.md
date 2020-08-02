@@ -26,7 +26,7 @@
 
 * 在termux下使用 `clash_control`命令, 可用参数有 `enable|disable|restart`, 例如，用于启动服务的命令为 `clash_control enable`。
 
-* 建议使用 [Dashboard App](<https://github.com/Dashboard2/Dashboard>) 。
+* 建议搭配 [Dashboard App](<https://github.com/Dashboard2/Dashboard>) 使用。
 
 ### 黑白名单使用方法
 
