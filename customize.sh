@@ -8,14 +8,14 @@ if [ $BOOTMODE ! = true ]; then
 fi
 
 if $(curl -V > /dev/null 2>&1) ; then
-   online=true
-   else
-   ui_print "- Your device does not have a curl command." 
-   ui_print "- Use local official core."
-   online=false
-   if [ "${ARCH}" ! = "arm64" ] ; then
-      abort "- Local core only support ${ARCH} architecture, stop install."
-   fi
+     online=true
+     else
+     ui_print "- Your device does not have a curl command." 
+     ui_print "- Use local official core."
+     online=false
+     if [ "${ARCH}" ! = "arm64" ] ; then
+        abort "- Local core only support ${ARCH} architecture, stop install."
+     fi
 fi
 
 sdcard_rw_id="1015"
@@ -35,15 +35,15 @@ unzip -j -o "${ZIPFILE}" 'module.prop' -d $MODPATH >&2
 
 case "${ARCH}" in
   arm)
-    latest_version=`curl -k -s https://tmpclashpremiumbindary.cf | grep -o clash-linux-armv7-*.*.*.*.gz | awk -F '>' '{print $2}'`
+    latest_version=`curl -k -s ${preview_clash_link} | grep -o clash-linux-armv7-*.*.*.*.gz | awk -F '>' '{print $2}'`
     download_clash_link="${preview_clash_link}/${latest_version}"
     ;;
   arm64)
-    latest_version=`curl -k -s https://tmpclashpremiumbindary.cf | grep -o clash-linux-armv8-*.*.*.*.gz | awk -F '>' '{print $2}'`
+    latest_version=`curl -k -s ${preview_clash_link} | grep -o clash-linux-armv8-*.*.*.*.gz | awk -F '>' '{print $2}'`
     download_clash_link="${preview_clash_link}/${latest_version}"
     ;;
   x86_64)
-    latest_version=`curl -k -s https://tmpclashpremiumbindary.cf | grep -o clash-linux-amd64-*.*.*.*.gz | awk -F '>' '{print $2}'`
+    latest_version=`curl -k -s ${preview_clash_link} | grep -o clash-linux-amd64-*.*.*.*.gz | awk -F '>' '{print $2}'`
     download_clash_link="${preview_clash_link}/${latest_version}"
     ;;
 esac
