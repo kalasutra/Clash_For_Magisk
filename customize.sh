@@ -3,20 +3,24 @@
 # override the official Magisk module installer
 SKIPUNZIP=1
 
-if [ $BOOTMODE = true ] ; then
-    if [ "${ARCH}" = "arm64" ] ; then
-        ui_print "The module supports ${ARCH} architecture, continue to install."
-    else
-        abort "The module does not support ${ARCH} architecture, stop install."
-    fi
+if [ $BOOTMODE ! = true ]; then
+   abort "! Please install in Magisk Manager"
+fi
+
+if $(curl -V > /dev/null 2>&1) ; then
+     online=true
 else
-    abort "! Please install in Magisk Manager"
+     ui_print "- Your device does not have a curl command." 
+     ui_print "- Use local official core."
+     online=false
+     if [ "${ARCH}" ! = "arm64" ] ; then
+        abort "- Local core only support ${ARCH} architecture, stop install."
+     fi
 fi
 
 sdcard_rw_id="1015"
 clash_data_dir="/sdcard/Documents/clash"
-clash_link="https://tmpclashpremiumbindary.cf"
-latest_version=`curl -k -s https://tmpclashpremiumbindary.cf | grep -o clash-linux-armv8-*.*.*.*.gz | awk -F '>' '{print $2}'`
+preview_clash_link="https://tmpclashpremiumbindary.cf"
 
 mkdir -p $MODPATH/system/bin
 mkdir -p ${clash_data_dir}
@@ -29,14 +33,46 @@ unzip -j -o "${ZIPFILE}" 'service.sh' -d $MODPATH >&2
 unzip -j -o "${ZIPFILE}" 'uninstall.sh' -d $MODPATH >&2
 unzip -j -o "${ZIPFILE}" 'module.prop' -d $MODPATH >&2
 
-curl "${clash_link}/${latest_version}" -k -L -o "$MODPATH/clash.gz" >&2
-if [ "$?" != "0" ] ; then
-    abort "Error: Download Clash core failed."
+case "${ARCH}" in
+  arm)
+    latest_version=`curl -k -s ${preview_clash_link} | grep -o clash-linux-armv7-*.*.*.*.gz | awk -F '>' '{print $2}'`
+    download_clash_link="${preview_clash_link}/${latest_version}"
+    ;;
+  arm64)
+    latest_version=`curl -k -s ${preview_clash_link} | grep -o clash-linux-armv8-*.*.*.*.gz | awk -F '>' '{print $2}'`
+    download_clash_link="${preview_clash_link}/${latest_version}"
+    ;;
+  x86_64)
+    latest_version=`curl -k -s ${preview_clash_link} | grep -o clash-linux-amd64-*.*.*.*.gz | awk -F '>' '{print $2}'`
+    download_clash_link="${preview_clash_link}/${latest_version}"
+    ;;
+esac
+ui_print "- Download latest Clash core ${latest_version}"
+if [ "${latest_version}" = "" ] ; then
+   abort "- Error: Connect preview Clash download link failed." 
 fi
-ui_print "Extracting Clash core file"
+curl "${download_clash_link}" -k -L -o "$MODPATH/clash.gz" >&2
+if [ "$?" != "0" ] ; then
+   abort "- Error: Download Clash core failed."
+fi
+ui_print "- Extracting Clash core file"
 gzip -d $MODPATH/clash.gz
 mv $MODPATH/clash $MODPATH/system/bin
 
+if [ $online = true ]; then
+   ui_print "- Generate module.prop"
+   rm -rf $MODPATH/module.prop
+   touch $MODPATH/module.prop
+   echo "id=clash_premium" > $MODPATH/module.prop
+   echo "name=Clash Premium For Magisk" >> $MODPATH/module.prop
+   echo -n "version=preview-" >> $MODPATH/module.prop
+   echo ${latest_version} >> $MODPATH/module.prop
+   echo "versionCode=$(date +%Y%m%d)" >> $MODPATH/module.prop
+   echo "author=shell scripts by kalasutra. clash premium by Dreamacro" >> $MODPATH/module.prop
+   echo "description=clash premium with service scripts for Android.Only supports tun mode transparent proxy.Default disable ipv6." >> $MODPATH/module.prop
+fi
+
+ui_print "- Set permissions"
 set_perm_recursive $MODPATH 0 0 0755 0644
 set_perm  $MODPATH/service.sh    0  0  0755
 set_perm  $MODPATH/uninstall.sh    0  0  0755
