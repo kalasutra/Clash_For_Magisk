@@ -9,7 +9,7 @@ fi
 
 if $(curl -V > /dev/null 2>&1) ; then
      online=true
-     else
+else
      ui_print "- Your device does not have a curl command." 
      ui_print "- Use local official core."
      online=false
