@@ -32,7 +32,6 @@ unzip -j -o "${ZIPFILE}" 'service.sh' -d $MODPATH >&2
 unzip -j -o "${ZIPFILE}" 'uninstall.sh' -d $MODPATH >&2
 unzip -j -o "${ZIPFILE}" 'module.prop' -d $MODPATH >&2
 
-ui_print "- Download latest Clash core ${latest_version}"
 case "${ARCH}" in
   arm)
     latest_version=`curl -k -s https://tmpclashpremiumbindary.cf | grep -o clash-linux-armv7-*.*.*.*.gz | awk -F '>' '{print $2}'`
@@ -47,6 +46,7 @@ case "${ARCH}" in
     download_clash_link="${preview_clash_link}/${latest_version}"
     ;;
 esac
+ui_print "- Download latest Clash core ${latest_version}"
 if [ "${latest_version}" = "" ] ; then
    abort "- Error: Connect preview Clash download link failed." 
 fi
