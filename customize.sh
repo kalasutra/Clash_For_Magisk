@@ -67,7 +67,7 @@ if [ $online = true ]; then
    echo "name=Clash Premium For Magisk" >> $MODPATH/module.prop
    echo -n "version=preview-" >> $MODPATH/module.prop
    echo ${latest_version} >> $MODPATH/module.prop
-   echo "versionCode=${date +%Y%m%d}" >> $MODPATH/module.prop
+   echo "versionCode=$(date +%Y%m%d)" >> $MODPATH/module.prop
    echo "author=shell scripts by kalasutra. clash premium by Dreamacro" >> $MODPATH/module.prop
    echo "description=clash premium with service scripts for Android.Only supports tun mode transparent proxy.Default disable ipv6." >> $MODPATH/module.prop
 fi
