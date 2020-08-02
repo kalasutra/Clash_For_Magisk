@@ -7,15 +7,17 @@ if [ $BOOTMODE ! = true ]; then
    abort "! Please install in Magisk Manager"
 fi
 
-find /system -name curl > $MODPATH/curl.txt
-if [ -p $MODPATH/directory.txt ]; then
+curl -V > /dev/null 2>&1
+if [ "$?" = "2" ] ; then
    ui_print "- Your device does not have a curl command." 
    ui_print "- Use local official core."
+   online=false
    if [ "${ARCH}" ! = "arm64" ] ; then
       abort "- Local core only support ${ARCH} architecture, stop install."
    fi
+   else
+   online=true
 fi
-rm -rf $MODPATH/curl.txt
 
 sdcard_rw_id="1015"
 clash_data_dir="/sdcard/Documents/clash"
@@ -58,16 +60,18 @@ ui_print "- Extracting Clash core file"
 gzip -d $MODPATH/clash.gz
 mv $MODPATH/clash $MODPATH/system/bin
 
-ui_print "- Generate module.prop"
-rm -rf $MODPATH/module.prop
-touch $MODPATH/module.prop
-echo "id=clash_premium" > $MODPATH/module.prop
-echo "name=Clash Premium For Magisk" >> $MODPATH/module.prop
-echo -n "version=preview-" >> $MODPATH/module.prop
-echo ${latest_version} >> $MODPATH/module.prop
-echo "versionCode=40000" >> $MODPATH/module.prop
-echo "author=shell scripts by kalasutra. clash premium by Dreamacro" >> $MODPATH/module.prop
-echo "description=clash premium with service scripts for Android.Only supports tun mode transparent proxy.Default disable ipv6." >> $MODPATH/module.prop
+if [ $online = true ]; then
+   ui_print "- Generate module.prop"
+   rm -rf $MODPATH/module.prop
+   touch $MODPATH/module.prop
+   echo "id=clash_premium" > $MODPATH/module.prop
+   echo "name=Clash Premium For Magisk" >> $MODPATH/module.prop
+   echo -n "version=preview-" >> $MODPATH/module.prop
+   echo ${latest_version} >> $MODPATH/module.prop
+   echo "versionCode=${date +%Y%m%d}" >> $MODPATH/module.prop
+   echo "author=shell scripts by kalasutra. clash premium by Dreamacro" >> $MODPATH/module.prop
+   echo "description=clash premium with service scripts for Android.Only supports tun mode transparent proxy.Default disable ipv6." >> $MODPATH/module.prop
+fi
 
 ui_print "- Set permissions"
 set_perm_recursive $MODPATH 0 0 0755 0644
