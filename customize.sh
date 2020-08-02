@@ -7,16 +7,15 @@ if [ $BOOTMODE ! = true ]; then
    abort "! Please install in Magisk Manager"
 fi
 
-curl -V > /dev/null 2>&1
-if [ "$?" = "2" ] ; then
+if $(curl -V > /dev/null 2>&1) ; then
+   online=true
+   else
    ui_print "- Your device does not have a curl command." 
    ui_print "- Use local official core."
    online=false
    if [ "${ARCH}" ! = "arm64" ] ; then
       abort "- Local core only support ${ARCH} architecture, stop install."
    fi
-   else
-   online=true
 fi
 
 sdcard_rw_id="1015"
