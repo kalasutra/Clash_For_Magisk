@@ -30,7 +30,7 @@
 
 ### 黑白名单使用方法
 
-* 如果您希望使用白名单功能，即特定应用程序具有透明代理（有关更多详细信息，请参见透明代理部分），只需在文件中写下这些应用程序的uid `/sdcard/Documents/clash/appid.list` .
+* 如果您希望使用白名单功能，即特定应用程序具有透明代理（有关更多详细信息，请参见透明代理部分），只需在`/sdcard/Documents/clash/appid.list`文件中写下这些应用程序的uid。
 * 每个应用程序的uid应以空格分隔，或每行仅写一个应用程序的uid。（对于Android应用程序的uid, 您可以在`/data/system/packages.list`文件中搜索应用程序的包名, 也可以借助某些APP来查看应用uid，例如Shadowsocks。）
 * 如果您希望clash能够代理所有App，只需在`/sdcard/Documents/clash/appid.list`文件中写入`ALL`即可。
 * 如果您希望使用黑名单功能，即不代理某些APP，请将`bypass`添加到`/sdcard/Documents/clash/appid.list`的第一行，从第二行开始写入你不希望代理的APP的uid。
