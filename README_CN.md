@@ -2,7 +2,7 @@
 
 这是一个clash premium for magisk模块, 已经内置clash premium内核。
 
-## 模块包含文件
+## 模块包含项目
 
 * [clash premium](<https://github.com/Dreamacro/clash/releases/tag/premium>)
 * [magisk-module-installer](<https://github.com/topjohnwu/magisk-module-installer>)
