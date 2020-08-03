@@ -5,5 +5,4 @@ META-INF/** text eol=lf
 *.md text eol=lf
 clash_control text eol=lf
 
-# Denote all files that are truly binary and should not be modified.
-clash binary
+clash zip
