@@ -7,25 +7,34 @@ if [ $BOOTMODE ! = true ]; then
    abort "! Please install in Magisk Manager"
 fi
 
+mkdir -p $MODPATH/system/bin
+
 if $(curl -V > /dev/null 2>&1) ; then
      online="true"
 else
      ui_print "- Your device does not have a curl command." 
      ui_print "- Use local official core."
      online="false"
-     if [ "${ARCH}" ! = "arm64" ] ; then
-        abort "- Local core only support ${ARCH} architecture, stop install."
-     fi
+     tar -xf $MODPATH/clash.tar.xz -C $TMPDIR >&2
+     case "${ARCH}" in
+     arm)
+        mv $TMPDIR/clash/clash-linux-armv7 $MODPATH/system/bin/clash
+        ;;
+     arm64)
+        mv $TMPDIR/clash/clash-linux-armv8 $MODPATH/system/bin/clash
+        ;;
+     x86_64)
+        mv $TMPDIR/clash/clash-linux-amd64 $MODPATH/system/bin/clash
+        ;;
+     esac
 fi
 
 sdcard_rw_id="1015"
 clash_data_dir="/sdcard/Documents/clash"
 preview_clash_link="https://tmpclashpremiumbindary.cf"
 
-mkdir -p $MODPATH/system/bin
 mkdir -p ${clash_data_dir}
 
-unzip -j -o "${ZIPFILE}" 'clash' -d $MODPATH/system/bin >&2
 unzip -j -o "${ZIPFILE}" 'clash_control' -d $MODPATH/system/bin >&2
 unzip -j -o "${ZIPFILE}" 'clash_service.sh' -d $MODPATH >&2
 unzip -j -o "${ZIPFILE}" 'clash_tproxy.sh' -d $MODPATH >&2
