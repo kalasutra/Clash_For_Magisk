@@ -5,4 +5,4 @@ META-INF/** text eol=lf
 *.md text eol=lf
 clash_control text eol=lf
 
-clash zip
+clash xz
