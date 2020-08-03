@@ -26,7 +26,6 @@ else
         ;;
      esac
 fi
-fi
 
 sdcard_rw_id="1015"
 clash_data_dir="/sdcard/Documents/clash"
