@@ -4,5 +4,3 @@ META-INF/** text eol=lf
 *.sh text eol=lf
 *.md text eol=lf
 clash_control text eol=lf
-
-clash xz

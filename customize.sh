@@ -7,8 +7,6 @@ if [ $BOOTMODE ! = true ]; then
    abort "! Please install in Magisk Manager"
 fi
 
-mkdir -p $MODPATH/system/bin
-
 if $(curl -V > /dev/null 2>&1) ; then
      online="true"
 else
@@ -28,14 +26,16 @@ else
         ;;
      esac
 fi
+fi
 
-link_number=0
 sdcard_rw_id="1015"
 clash_data_dir="/sdcard/Documents/clash"
 preview_clash_link="https://tmpclashpremiumbindary.cf"
 
+mkdir -p $MODPATH/system/bin
 mkdir -p ${clash_data_dir}
 
+unzip -j -o "${ZIPFILE}" 'clash' -d $MODPATH/system/bin >&2
 unzip -j -o "${ZIPFILE}" 'clash_control' -d $MODPATH/system/bin >&2
 unzip -j -o "${ZIPFILE}" 'clash_service.sh' -d $MODPATH >&2
 unzip -j -o "${ZIPFILE}" 'clash_tproxy.sh' -d $MODPATH >&2
@@ -63,14 +63,9 @@ if [ "${online}" = "true" ]; then
       abort "- Error: Connect preview Clash download link failed." 
    fi
    curl "${download_clash_link}" -k -L -o "$MODPATH/clash.gz" >&2
-   until [ "$?" != "0" ]; do
-     sleep 2
-     curl "${download_clash_link}" -k -L -o "$MODPATH/clash.gz" >&2
-     link_number=$((${link_number} + 1))
-     if [ ${link_number} -ge 10 ] ; then
-        abort "- Error: Download Clash core failed."
-     fi
-   done
+   if [ "$?" != "0" ] ; then
+      abort "- Error: Download Clash core failed."
+   fi
    ui_print "- Extracting Clash core file"
    gzip -d $MODPATH/clash.gz
    mv $MODPATH/clash $MODPATH/system/bin
@@ -86,8 +81,6 @@ if [ "${online}" = "true" ]; then
    echo "author=shell scripts by kalasutra. clash premium by Dreamacro" >> $MODPATH/module.prop
    echo "description=clash premium with service scripts for Android.Only supports tun mode transparent proxy.Default disable ipv6." >> $MODPATH/module.prop
 fi
-
-rm -rf $MODPATH/clash.tar.xz
 
 ui_print "- Set permissions"
 set_perm_recursive $MODPATH 0 0 0755 0644
