@@ -44,6 +44,7 @@ unzip -j -o "${ZIPFILE}" 'uninstall.sh' -d $MODPATH >&2
 unzip -j -o "${ZIPFILE}" 'module.prop' -d $MODPATH >&2
 
 if [ "${online}" = "true" ]; then
+   for i in $(seq 1 10); do
    case "${ARCH}" in
    arm)
       latest_version=`curl -k -s ${preview_clash_link} | grep -o clash-linux-armv7-*.*.*.*.gz | awk -F '>' '{print $2}'`
@@ -58,14 +59,16 @@ if [ "${online}" = "true" ]; then
       download_clash_link="${preview_clash_link}/${latest_version}"
       ;;
    esac
-   ui_print "- Download latest Clash core ${latest_version}"
-   if [ "${latest_version}" = "" ] ; then
-      abort "- Error: Connect preview Clash download link failed." 
+   if curl "${download_clash_link}" -k -L -o "$MODPATH/clash.gz" >&2;then
+   break;
    fi
-   curl "${download_clash_link}" -k -L -o "$MODPATH/clash.gz" >&2
-   if [ "$?" != "0" ] ; then
+   sleep 2
+   if [[ $i == 5 ]]; then
       abort "- Error: Download Clash core failed."
    fi
+   done
+   ui_print "- Download latest Clash core ${latest_version}"
+
    ui_print "- Extracting Clash core file"
    gzip -d $MODPATH/clash.gz
    mv $MODPATH/clash $MODPATH/system/bin
