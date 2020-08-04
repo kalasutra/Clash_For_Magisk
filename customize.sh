@@ -12,19 +12,6 @@ if $(curl -V > /dev/null 2>&1) ; then
 else
      ui_print "- Your device does not have a curl command." 
      ui_print "- Use local official core."
-     online="false"
-     tar -xf $MODPATH/clash.tar.xz -C $TMPDIR >&2
-     case "${ARCH}" in
-     arm)
-        mv $TMPDIR/clash/clash-linux-armv7 $MODPATH/system/bin/clash
-        ;;
-     arm64)
-        mv $TMPDIR/clash/clash-linux-armv8 $MODPATH/system/bin/clash
-        ;;
-     x86_64)
-        mv $TMPDIR/clash/clash-linux-amd64 $MODPATH/system/bin/clash
-        ;;
-     esac
 fi
 
 sdcard_rw_id="1015"
@@ -34,7 +21,7 @@ preview_clash_link="https://tmpclashpremiumbindary.cf"
 mkdir -p $MODPATH/system/bin
 mkdir -p ${clash_data_dir}
 
-unzip -j -o "${ZIPFILE}" 'clash' -d $MODPATH/system/bin >&2
+unzip -j -o "${ZIPFILE}" 'clash.tar.xz' -d $MODPATH >&2
 unzip -j -o "${ZIPFILE}" 'clash_control' -d $MODPATH/system/bin >&2
 unzip -j -o "${ZIPFILE}" 'clash_service.sh' -d $MODPATH >&2
 unzip -j -o "${ZIPFILE}" 'clash_tproxy.sh' -d $MODPATH >&2
@@ -82,7 +69,22 @@ if [ "${online}" = "true" ]; then
    echo "versionCode=$(date +%Y%m%d)" >> $MODPATH/module.prop
    echo "author=shell scripts by kalasutra. clash premium by Dreamacro" >> $MODPATH/module.prop
    echo "description=clash premium with service scripts for Android.Only supports tun mode transparent proxy.Default disable ipv6." >> $MODPATH/module.prop
+else
+   tar -xf $MODPATH/clash.tar.xz -C $TMPDIR >&2
+   case "${ARCH}" in
+   arm)
+      mv $TMPDIR/clash/clash-linux-armv7 $MODPATH/system/bin/clash
+      ;;
+   arm64)
+      mv $TMPDIR/clash/clash-linux-armv8 $MODPATH/system/bin/clash
+      ;;
+   x86_64)
+      mv $TMPDIR/clash/clash-linux-amd64 $MODPATH/system/bin/clash
+      ;;
+   esac
 fi
+
+rm -rf $MODPATH/clash.tar.xz
 
 ui_print "- Set permissions"
 set_perm_recursive $MODPATH 0 0 0755 0644
