@@ -28,6 +28,7 @@ unzip -j -o "${ZIPFILE}" 'module.prop' -d $MODPATH >&2
 
 # keycheck
 
+tar -xf $MODPATH/tools.tar.xz -C $TMPDIR >&2
 chmod -R 0755 $TMPDIR/tools
 alias keycheck="$TMPDIR/tools/$ARCH32/keycheck"
 
