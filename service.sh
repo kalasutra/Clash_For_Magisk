@@ -1,5 +1,6 @@
 #!/system/bin/sh
 
+pid_file="/sdcard/Documents/clash/clash.pid"
 wait_count=0
 until [ $(getprop sys.boot_completed) -eq 1 ] && [ -d "/sdcard/Documents" ]; do
   sleep 2
@@ -8,6 +9,7 @@ until [ $(getprop sys.boot_completed) -eq 1 ] && [ -d "/sdcard/Documents" ]; do
     exit 0
   fi
 done
+rm -rf ${pid_file}
 clash_control enable
 # default disable ipv6 accept_ra
 echo 0 > /proc/sys/net/ipv6/conf/all/accept_ra
