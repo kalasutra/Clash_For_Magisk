@@ -2,16 +2,43 @@
 
 # override the official Magisk module installer
 SKIPUNZIP=1
+
 sdcard_rw_id="1015"
 clash_data_dir="/sdcard/Documents/clash"
+pid_file="${clash_data_dir}/clash.pid"
 installation_mode="offline"
-architecture=(arm arm64 x64)
+architecture=(arm arm64 x64 x86)
 
 if [ "${architecture[@]}" =~ "${ARCH}" ] ; then
     ui_print "- The current module supports ${ARCH} architecture, and the installation continues."
 else
     abort "- The current module does not support the ${ARCH} architecture, and the installation stops."
 fi
+
+choose_mode() {
+  ui_print "- VOLUMEDOWN = offline"
+  ui_print "- VOLUMEUP = online"
+  while true ; do
+    getevent -lc 1 | awk '/VOLUME/ {print $3}' > $TMPDIR/events
+    if (`cat ${TMPDIR}/events | grep -q VOLUMEDOWN`) ; then
+      break
+    elif (`cat ${TMPDIR}/events | grep -q VOLUMEUP`) ; then
+      installation_mode="online"
+      break
+    else
+      ui_print "- An unknown error occurred."
+    fi
+  done
+}
+
+mkdir -p $MODPATH/system/bin
+mkdir -p ${clash_data_dir}
+
+unzip -j -o "${ZIPFILE}" 'clash_control.sh' -d $MODPATH/system/bin >&2
+unzip -j -o "${ZIPFILE}" 'clash_service.sh' -d $MODPATH >&2
+unzip -j -o "${ZIPFILE}" 'clash_tproxy.sh' -d $MODPATH >&2
+unzip -j -o "${ZIPFILE}" 'service.sh' -d $MODPATH >&2
+unzip -j -o "${ZIPFILE}" 'uninstall.sh' -d $MODPATH >&2
 
 # sdcard_rw_id="1015"
 # clash_data_dir="/sdcard/Documents/clash"
@@ -52,8 +79,6 @@ fi
 # }
 
 # chooseport() {
-#   # Original idea by chainfire @xda-developers, improved on by ianmacd @xda-developers
-#   #note from chainfire @xda-developers: getevent behaves weird when piped, and busybox grep likes that even less than toolbox/toybox grep
 #   while true; do
 #     /system/bin/getevent -lc 1 2>&1 | /system/bin/grep VOLUME | /system/bin/grep " DOWN" > $TMPDIR/events
 #     if (`cat $TMPDIR/events 2>/dev/null | /system/bin/grep VOLUME >/dev/null`); then
@@ -65,27 +90,6 @@ fi
 #   else
 #     return 1
 #   fi
-# }
-
-# chooseportold() {
-#   # Keycheck binary by someone755 @Github, idea for code below by Zappo @xda-developers
-#   # Calling it first time detects previous input. Calling it second time will do what we want
-#   while true; do
-#     keycheck
-#     keycheck
-#     local SEL=$?
-#     if [ "$1" == "UP" ]; then
-#       UP=$SEL
-#       break
-#     elif [ "$1" == "DOWN" ]; then
-#       DOWN=$SEL
-#       break
-#     elif [ $SEL -eq $UP ]; then
-#       return 0
-#     elif [ $SEL -eq $DOWN ]; then
-#       return 1
-#     fi
-#   done
 # }
 
 # # Have user option to skip vol keys
