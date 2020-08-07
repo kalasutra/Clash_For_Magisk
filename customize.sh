@@ -15,24 +15,28 @@ else
     abort "- The current module does not support the ${ARCH} architecture, and the installation stops."
 fi
 
-choose_mode() {
-  ui_print "- VOLUMEDOWN = offline"
-  ui_print "- VOLUMEUP = online"
-  while true ; do
-    getevent -lc 1 | awk '/VOLUME/ {print $3}' > $TMPDIR/events
-    if (`cat ${TMPDIR}/events | grep -q VOLUMEDOWN`) ; then
-      break
-    elif (`cat ${TMPDIR}/events | grep -q VOLUMEUP`) ; then
-      installation_mode="online"
-      break
-    else
-      ui_print "- An unknown error occurred."
-    fi
-  done
-}
-
 mkdir -p $MODPATH/system/bin
 mkdir -p ${clash_data_dir}
+
+check_support() {
+    $(curl -V > /dev/null 2>&1) && ${BOOTMODE} && return 0 || return 1
+}
+
+choose_mode() {
+    ui_print "- VOLUMEDOWN = offline"
+    ui_print "- VOLUMEUP = online"
+    while true ; do
+        getevent -lc 1 | awk '/VOLUME/ {print $3}' > $TMPDIR/events
+        if (`cat ${TMPDIR}/events | grep -q VOLUMEDOWN`) ; then
+            break
+        elif (`cat ${TMPDIR}/events | grep -q VOLUMEUP`) && check_support ; then
+            installation_mode="online"
+            break
+        else
+            ui_print "- An unknown error occurred."
+        fi
+    done
+}
 
 unzip -j -o "${ZIPFILE}" 'clash_control.sh' -d $MODPATH/system/bin >&2
 unzip -j -o "${ZIPFILE}" 'clash_service.sh' -d $MODPATH >&2
