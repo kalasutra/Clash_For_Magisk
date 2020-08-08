@@ -1,8 +1,11 @@
 # Clash Premium Magisk Module
+
 [简体中文](<https://github.com/kalasutra/Clash_Premium_For_Magisk/blob/master/README_CN.md>)
- 
-  This is a clash premium module for Magisk, and includes binaries for arm64.
+
+This is a clash premium module for Magisk, and includes binaries for arm,arm64,x64,x86.
+
 ## Included
+
 * [clash premium](<https://github.com/Dreamacro/clash/releases/tag/premium>)
 * [magisk-module-installer](<https://github.com/topjohnwu/magisk-module-installer>)
 * [magisk-disable-ipv6](<https://github.com/njallam/magisk-disable-ipv6>)
