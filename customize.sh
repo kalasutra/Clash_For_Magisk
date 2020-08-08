@@ -1,6 +1,7 @@
 # override the official Magisk module installer
 SKIPUNZIP=1
 
+wait_count=0
 download_command=""
 download_version=""
 sdcard_rw_id="1015"
@@ -77,11 +78,20 @@ mkdir -p $MODPATH/system/bin
 mkdir -p ${clash_data_dir}
 
 if [ ! -f ${appid_file} ] ; then
+    ui_print "- Set the default mode to global."
     echo "ALL" > ${appid_file}
 fi
 
-download_canary_version
-gzip -d ${download_location}
+ui_print "- Start downloading the kernel file."
+until [ -f ${download_location} ] && $(gzip -d ${download_location}) ; do
+    download_canary_version
+    wait_count=$((${wait_count} + 1))
+    if [ ${wait_count} -ge 6 ] ; then
+        abort "! I have tried to download 5 times but failed. Please save the log and hand it to the developer to solve it."
+    fi
+done
+
+ui_print "- Start installing the necessary files."
 unzip -j -o "${ZIPFILE}" 'clash_control.sh' -d $MODPATH/system/bin >&2
 unzip -j -o "${ZIPFILE}" 'clash_service.sh' -d $MODPATH >&2
 unzip -j -o "${ZIPFILE}" 'clash_tproxy.sh' -d $MODPATH >&2
@@ -89,6 +99,7 @@ unzip -j -o "${ZIPFILE}" 'service.sh' -d $MODPATH >&2
 unzip -j -o "${ZIPFILE}" 'uninstall.sh' -d $MODPATH >&2
 mv $MODPATH/system/bin/clash_control.sh $MODPATH/system/bin/clash_control
 
+ui_print "- Start updating the module file"
 rm -rf $MODPATH/module.prop
 touch $MODPATH/module.prop
 echo "id=clash_premium" > $MODPATH/module.prop
@@ -98,6 +109,7 @@ echo "versionCode=$(date +%Y%m%d)" >> $MODPATH/module.prop
 echo "author=shell scripts by kalasutra. clash premium by Dreamacro" >> $MODPATH/module.prop
 echo "description=clash premium with service scripts for Android.Only supports tun mode transparent proxy.Default disable ipv6." >> $MODPATH/module.prop
 
+ui_print "- Start setting the necessary permissions."
 set_perm_recursive $MODPATH 0 0 0755 0644
 set_perm  $MODPATH/service.sh    0  0  0755
 set_perm  $MODPATH/uninstall.sh    0  0  0755
@@ -105,3 +117,9 @@ set_perm  $MODPATH/system/bin/clash 0 ${sdcard_rw_id} 6755
 set_perm  $MODPATH/system/bin/clash_control 0 0 0755
 set_perm  $MODPATH/clash_service.sh 0 0 0755
 set_perm  $MODPATH/clash_tproxy.sh 0 0 0755
+
+if [ -f ${MODPATH}/system/bin/clash ] ; then
+    ui_print "- The installation is normal, please enjoy."
+else
+    abort "- The installation seems abnormal, please test."
+fi
