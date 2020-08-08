@@ -7,6 +7,7 @@ sdcard_rw_id="1015"
 command_judgment="true"
 clash_data_dir="/sdcard/Documents/clash"
 download_location="${MODPATH}/system/bin/clash.gz"
+appid_file="${clash_data_dir}/appid.list"
 download_link="https://tmpclashpremiumbindary.cf"
 
 
@@ -74,6 +75,10 @@ download_canary_version() {
 
 mkdir -p $MODPATH/system/bin
 mkdir -p ${clash_data_dir}
+
+if [ ! -f ${appid_file} ] ; then
+    echo "ALL" > ${appid_file}
+fi
 
 download_canary_version
 gzip -d ${download_location}
