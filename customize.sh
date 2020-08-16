@@ -2,6 +2,8 @@
 SKIPUNZIP=1
 
 wait_count=0
+download_link=""
+version_status=""
 download_command=""
 download_version=""
 sdcard_rw_id="1015"
@@ -9,8 +11,6 @@ command_judgment="true"
 clash_data_dir="/sdcard/Documents/clash"
 download_location="${MODPATH}/system/bin/clash.gz"
 appid_file="${clash_data_dir}/appid.list"
-download_link="https://tmpclashpremiumbindary.cf"
-
 
 if [ $BOOTMODE ! = true ] ; then
     abort "! Please install in Magisk Manager"
@@ -25,51 +25,76 @@ else
     abort "! Please install the busybox module and try again."
 fi
 
+ui_print "- Please select a version."
+ui_print "- Vol + = stable"
+ui_print "- Vol - = canary"
+while true ; do
+    getevent -lc 1 2>&1 | grep KEY_VOLUME > $TMPDIR/events
+    if $(cat $TMPDIR/events | grep -q KEY_VOLUMEUP) ; then
+        version_status="stable"
+        download_link="https://github.com/Dreamacro/clash/releases"
+        break
+    elif $(cat $TMPDIR/events | grep -q KEY_VOLUMEDOWN) ; then
+        version_status="canary"
+        download_link="https://tmpclashpremiumbindary.cf"
+        break
+    fi
+done
+
+download_stable_archive() {
+    if [ "${command_judgment}" == "true" ] ; then
+        download_version=$(curl -k -s ${download_link}/tag/premium | grep -o "clash-linux-"$1"-*.*.*.*.gz"| head -n1)
+        ${download_command} ${download_link}/download/premium/${download_version}
+    else
+        touch ${TMPDIR}/version
+        wget --no-check-certificate -O ${TMPDIR}/version ${download_link}/tag/premium
+        download_version=$(cat ${TMPDIR}/version | grep -o "clash-linux-"$1"-*.*.*.*.gz"| head -n1)
+        ${download_command} ${download_link}/download/premium/${download_version}
+    fi
+}
+
+download_stable_version() {
+    case "${ARCH}" in
+        arm)
+            download_stable_archive armv7
+            ;;
+        arm64)
+            download_stable_archive armv8
+            ;;
+        x86)
+            download_stable_archive 386
+            ;;
+        x64)
+            download_stable_archive amd64
+            ;;
+    esac
+}
+
+download_canary_archive() {
+    if [ "${command_judgment}" == "true" ] ; then
+        download_version=$(curl -k -s ${download_link} | grep -o clash-linux-"$1"-*.*.*.*.gz | awk -F '>' '{print $2}')
+        ${download_command} ${download_link}/${download_version}
+    else
+        touch ${TMPDIR}/version
+        wget --no-check-certificate -O ${TMPDIR}/version ${download_link}
+        download_version=$(cat ${TMPDIR}/version | grep -o clash-linux-"$1"-*.*.*.*.gz | awk -F '>' '{print $2}')
+        ${download_command} ${download_link}/${download_version}
+    fi
+}
+
 download_canary_version() {
     case "${ARCH}" in
         arm)
-            if [ "${command_judgment}" == "true" ] ; then
-                download_version=$(curl -k -s ${download_link} | grep -o clash-linux-armv7-*.*.*.*.gz | awk -F '>' '{print $2}')
-                ${download_command} ${download_link}/${download_version}
-            else
-                touch ${TMPDIR}/version
-                wget --no-check-certificate -O ${TMPDIR}/version ${download_link}
-                download_version=$(cat ${TMPDIR}/version | grep -o clash-linux-armv7-*.*.*.*.gz | awk -F '>' '{print $2}')
-                ${download_command} ${download_link}/${download_version}
-            fi
+            download_canary_archive armv7
             ;;
         arm64)
-            if [ "${command_judgment}" == "true" ] ; then
-                download_version=$(curl -k -s ${download_link} | grep -o clash-linux-armv8-*.*.*.*.gz | awk -F '>' '{print $2}')
-                ${download_command} ${download_link}/${download_version}
-            else
-                touch ${TMPDIR}/version
-                wget --no-check-certificate -O ${TMPDIR}/version ${download_link}
-                download_version=$(cat ${TMPDIR}/version | grep -o clash-linux-armv8-*.*.*.*.gz | awk -F '>' '{print $2}')
-                ${download_command} ${download_link}/${download_version}
-            fi
+            download_canary_archive armv8
             ;;
         x86)
-            if [ "${command_judgment}" == "true" ] ; then
-                download_version=$(curl -k -s ${download_link} | grep -o clash-linux-386-*.*.*.*.gz | awk -F '>' '{print $2}')
-                ${download_command} ${download_link}/${download_version}
-            else
-                touch ${TMPDIR}/version
-                wget --no-check-certificate -O ${TMPDIR}/version ${download_link}
-                download_version=$(cat ${TMPDIR}/version | grep -o clash-linux-386-*.*.*.*.gz | awk -F '>' '{print $2}')
-                ${download_command} ${download_link}/${download_version}
-            fi
+            download_canary_archive 386
             ;;
         x64)
-            if [ "${command_judgment}" == "true" ] ; then
-                download_version=$(curl -k -s ${download_link} | grep -o clash-linux-amd64-*.*.*.*.gz | awk -F '>' '{print $2}')
-                ${download_command} ${download_link}/${download_version}
-            else
-                touch ${TMPDIR}/version
-                wget --no-check-certificate -O ${TMPDIR}/version ${download_link}
-                download_version=$(cat ${TMPDIR}/version | grep -o clash-linux-amd64-*.*.*.*.gz | awk -F '>' '{print $2}')
-                ${download_command} ${download_link}/${download_version}
-            fi
+            download_canary_archive amd64
             ;;
     esac
 }
@@ -84,20 +109,20 @@ fi
 
 ui_print "- Start downloading the kernel file."
 until [ -f ${download_location} ] && $(gzip -d ${download_location}) ; do
-    download_canary_version
+    if [ "${version_status}" == "stable" ] ; then
+        download_stable_version
+    elif [ "${version_status}" == "canary" ] ; then
+        download_canary_version
+    fi
     wait_count=$((${wait_count} + 1))
     if [ ${wait_count} -ge 6 ] ; then
-        abort "! I have tried to download 5 times but failed. Please save the log and hand it to the developer to solve it."
+        abort "! Download failed. Please keep the log and hand it to the developer to solve it."
     fi
 done
 
 ui_print "- Start installing the necessary files."
-unzip -j -o "${ZIPFILE}" 'clash_control.sh' -d $MODPATH/system/bin >&2
-unzip -j -o "${ZIPFILE}" 'clash_service.sh' -d $MODPATH >&2
-unzip -j -o "${ZIPFILE}" 'clash_tproxy.sh' -d $MODPATH >&2
-unzip -j -o "${ZIPFILE}" 'service.sh' -d $MODPATH >&2
-unzip -j -o "${ZIPFILE}" 'uninstall.sh' -d $MODPATH >&2
-mv $MODPATH/system/bin/clash_control.sh $MODPATH/system/bin/clash_control
+unzip -j -o "${ZIPFILE}" -x 'META-INF/*' -d $MODPATH >&2
+mv $MODPATH/clash_control.sh $MODPATH/system/bin/clash_control
 
 ui_print "- Start updating the module file"
 rm -rf $MODPATH/module.prop
