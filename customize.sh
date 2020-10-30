@@ -1,5 +1,6 @@
 # override the official Magisk module installer
 SKIPUNZIP=1
+ASH_STANDALONE=1
 
 wait_count=0
 download_link=""
@@ -25,18 +26,31 @@ else
     abort "! Please install the busybox module and try again."
 fi
 
-ui_print "- Please select a version."
-ui_print "- Vol + = stable"
-ui_print "- Vol - = canary"
+ui_print "- Select installation mode -"
+ui_print "- Vol Up = Local mod"
+ui_print "- Vol Down = Online mod"
 while true ; do
     getevent -lc 1 2>&1 | grep KEY_VOLUME > $TMPDIR/events
     if $(cat $TMPDIR/events | grep -q KEY_VOLUMEUP) ; then
-        version_status="stable"
-        download_link="https://github.com/Dreamacro/clash/releases"
+        mod="local"
         break
     elif $(cat $TMPDIR/events | grep -q KEY_VOLUMEDOWN) ; then
-        version_status="canary"
-        download_link="https://tmpclashpremiumbindary.cf"
+        mod="online"
+        ui_print "- Please select a version."
+        ui_print "- Vol + = stable"
+        ui_print "- Vol - = canary"
+        while true ; do
+           getevent -lc 1 2>&1 | grep KEY_VOLUME > $TMPDIR/events
+           if $(cat $TMPDIR/events | grep -q KEY_VOLUMEUP) ; then
+               version_status="stable"
+               download_link="https://github.com/Dreamacro/clash/releases"
+               break
+           elif $(cat $TMPDIR/events | grep -q KEY_VOLUMEDOWN) ; then
+               version_status="canary"
+               download_link="https://tmpclashpremiumbindary.cf"
+               break
+           fi
+        done
         break
     fi
 done
@@ -64,7 +78,7 @@ download_stable_version() {
         x86)
             download_stable_archive 386
             ;;
-        x64)
+        x86_64)
             download_stable_archive amd64
             ;;
     esac
@@ -93,10 +107,27 @@ download_canary_version() {
         x86)
             download_canary_archive 386
             ;;
-        x64)
+        x86_64)
             download_canary_archive amd64
             ;;
     esac
+}
+
+local_mod() {
+    case "${ARCH}" in
+      arm)
+          mv -f $MODPATH/clash/clash-linux-armv7 $MODPATH/system/bin/clash
+          ;;
+      arm64)
+          mv -f $MODPATH/clash/clash-linux-armv8 $MODPATH/system/bin/clash
+          ;;
+      x86)
+          mv -f $MODPATH/clash/clash-linux-386 $MODPATH/system/bin/clash
+          ;;
+      x86_64)
+          mv -f $MODPATH/clash/clash-linux-amd64 $MODPATH/system/bin/clash
+          ;;
+          esac
 }
 
 mkdir -p $MODPATH/system/bin
@@ -107,22 +138,29 @@ if [ ! -f ${appid_file} ] ; then
     echo "ALL" > ${appid_file}
 fi
 
-ui_print "- Start downloading the kernel file."
-until [ -f ${download_location} ] && $(gzip -d ${download_location}) ; do
-    if [ "${version_status}" == "stable" ] ; then
-        download_stable_version
-    elif [ "${version_status}" == "canary" ] ; then
-        download_canary_version
-    fi
-    wait_count=$((${wait_count} + 1))
-    if [ ${wait_count} -ge 6 ] ; then
-        abort "! Download failed. Please keep the log and hand it to the developer to solve it."
-    fi
-done
-
 ui_print "- Start installing the necessary files."
 unzip -j -o "${ZIPFILE}" -x 'META-INF/*' -d $MODPATH >&2
+tar -xf $MODPATH/clash.tar.xz -C $MODPATH >&2
 mv $MODPATH/clash_control.sh $MODPATH/system/bin/clash_control
+
+if [ "${mod}" == "local" ] ; then
+    local_mod
+elif [ "${mod}" == "online" ] ; then
+    ui_print "- Start downloading the kernel file."
+    until [ -f ${download_location} ] && $(gzip -d ${download_location}) ; do
+        if [ "${version_status}" == "stable" ] ; then
+            download_stable_version
+        elif [ "${version_status}" == "canary" ] ; then
+            download_canary_version
+        fi
+        wait_count=$((${wait_count} + 1))
+        if [ ${wait_count} -ge 6 ] ; then
+            abort "! Download failed. Please keep the log and hand it to the developer to solve it."
+        fi
+    done
+else
+    abort "- Selection error."
+fi
 
 ui_print "- Start updating the module file"
 rm -rf $MODPATH/module.prop
@@ -148,3 +186,6 @@ if [ -f ${MODPATH}/system/bin/clash ] ; then
 else
     abort "- The installation seems abnormal, please test."
 fi
+
+rm -rf $MODPATH/clash.tar.xz
+rm -rf $MODPATH/clash
