@@ -78,7 +78,7 @@ download_stable_version() {
         x86)
             download_stable_archive 386
             ;;
-        x86_64)
+        x64)
             download_stable_archive amd64
             ;;
     esac
@@ -107,7 +107,7 @@ download_canary_version() {
         x86)
             download_canary_archive 386
             ;;
-        x86_64)
+        x64)
             download_canary_archive amd64
             ;;
     esac
@@ -124,7 +124,7 @@ local_mod() {
       x86)
           mv -f $MODPATH/clash/clash-linux-386 $MODPATH/system/bin/clash
           ;;
-      x86_64)
+      x64)
           mv -f $MODPATH/clash/clash-linux-amd64 $MODPATH/system/bin/clash
           ;;
           esac
