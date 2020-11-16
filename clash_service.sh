@@ -10,9 +10,9 @@ clash_data_dir="/sdcard/Documents/clash"
 conf_file="${clash_data_dir}/config.yaml"
 geoip_file="${clash_data_dir}/Country.mmdb"
 pid_file="${clash_data_dir}/${bin_name}.pid"
-proxies_file="${clash_data_dir}/proxies.txt"
+selector_file="${clash_data_dir}/selector.txt"
 
-proxies_restore() {
+selector_restore() {
     va="0"
     while read line
     do
@@ -25,10 +25,10 @@ proxies_restore() {
             selector=$line
             curl -v -X PUT -d "{${selector}}" "127.0.0.1:9090/proxies/${group}"
         fi
-    done < ${proxies_file}
+    done < ${selector_file}
 }
 
-proxies_record() {
+selector_record() {
     curl http://127.0.0.1:9090/proxies | sed -E 's/Selector/Selector\n/g' | sed '$d' | sed -E 's/.*name":"(.*)","now":"(.*)","type.*/\1\n"name":"\2"/' > ${proxies_file}
 }
 
@@ -90,7 +90,7 @@ start_service() {
         if wait_clash_listen ; then
             add_rule
             add_route
-            proxies_restore
+            selector_restore
             return 0
         else
             rm -f ${pid_file}
@@ -102,7 +102,7 @@ start_service() {
 }
 
 stop_service() {
-    proxies_record
+    selector_record
     kill -9 `cat ${pid_file}` || killall ${bin_name} || kill `cat ${pid_file}`
     sleep 1
     del_rule
