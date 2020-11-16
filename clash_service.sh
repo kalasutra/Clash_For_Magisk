@@ -29,7 +29,7 @@ selector_restore() {
 }
 
 selector_record() {
-    curl http://127.0.0.1:9090/proxies | sed -E 's/Selector/Selector\n/g' | sed '$d' | sed -E 's/.*name":"(.*)","now":"(.*)","type.*/\1\n"name":"\2"/' > ${proxies_file}
+    curl http://127.0.0.1:9090/proxies | sed -E 's/Selector/Selector\n/g' | sed '$d' | sed -E 's/.*name":"(.*)","now":"(.*)","type.*/\1\n"name":"\2"/' > ${selector_file}
 }
 
 create_tun_link() {
