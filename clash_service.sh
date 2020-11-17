@@ -30,7 +30,7 @@ selector_restore() {
 }
 
 selector_record() {
-    curl http://127.0.0.1:9090/proxies | sed -E 's/Selector/Selector\n/g' | sed '$d' | sed -E 's/.*name":"(.*)","now":"(.*)","type.*/\1\n"name":"\2"/' > ${selector_file}
+    curl http://127.0.0.1:9090/proxies | sed -E 's/Selector/Selector\n/g' | sed '$d' | sed -E 's/.*name":"(.*)","now":"(.*)","type.*/\1\n"name":"\2"/' > ${selector_tmp}
     if test -s ${selector_tmp};
     then
         cp -f ${selector_tmp} ${selector_file}
