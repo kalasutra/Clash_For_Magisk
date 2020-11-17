@@ -11,6 +11,7 @@ conf_file="${clash_data_dir}/config.yaml"
 geoip_file="${clash_data_dir}/Country.mmdb"
 pid_file="${clash_data_dir}/${bin_name}.pid"
 selector_file="${clash_data_dir}/selector.txt"
+selector_tmp="${clash_data_dir}/selector.tmp"
 
 selector_restore() {
     va="0"
@@ -30,6 +31,13 @@ selector_restore() {
 
 selector_record() {
     curl http://127.0.0.1:9090/proxies | sed -E 's/Selector/Selector\n/g' | sed '$d' | sed -E 's/.*name":"(.*)","now":"(.*)","type.*/\1\n"name":"\2"/' > ${selector_file}
+    if test -s ${selector_tmp};
+    then
+        cp -f ${selector_tmp} ${selector_file}
+    else
+        echo "Selector empty, selector.txt not updated"
+    fi
+    rm -f ${selector_tmp}
 }
 
 create_tun_link() {
