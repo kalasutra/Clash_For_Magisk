@@ -20,7 +20,7 @@ selector_restore() {
         if [ "$va" = "0" ];
         then
             va="1"
-            group=$(echo $line |tr -d '\n' |od -An -tx1|tr ' ' %)
+            group=$(echo $line |tr -d '\n' |od -An -tx1|tr ' ' %|tr -d '\n')
         else
             va="0"
             selector=$line
