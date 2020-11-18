@@ -32,12 +32,12 @@ selector_restore() {
     do
         if [ "$va" = "0" ];
         then
-          va="1"
-          group=$(echo $line |tr -d '\n' |od -An -tx1|tr ' ' %|tr -d '\n')
+            va="1"
+            group=$(echo $line |tr -d '\n' |od -An -tx1|tr ' ' %|tr -d '\n')
         else
-          va="0"
-          selector=$line
-          curl -v -H "Authorization: Bearer ${clash_secret}" -X PUT -d "{${selector}}" "127.0.0.1:${clash_ec_port}/proxies/${group}"
+            va="0"
+            selector=$line
+            curl -v -H "Authorization: Bearer ${clash_secret}" -X PUT -d "{${selector}}" "127.0.0.1:${clash_ec_port}/proxies/${group}"
         fi
     done < ${selector_file}
 }
