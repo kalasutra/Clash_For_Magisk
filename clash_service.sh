@@ -54,7 +54,8 @@ selector_record() {
     then
         cp -f ${selector_tmp} ${selector_file}
     else
-        echo -e "\033[7;32mSelector empty, selector.txt not updated\033[0m"    fi
+        echo -e "\033[7;32mSelector empty, selector.txt not updated\033[0m"
+    fi
     rm -f ${selector_tmp}
 }
 
