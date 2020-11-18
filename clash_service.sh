@@ -26,20 +26,25 @@ get_ec_parameter() {
 }
 
 selector_restore() {
-    get_ec_parameter
-    va="0"
-    while read line
-    do
-        if [ "$va" = "0" ];
-        then
-            va="1"
-            group=$(echo $line |tr -d '\n' |od -An -tx1|tr ' ' %|tr -d '\n')
-        else
-            va="0"
-            selector=$line
-            curl -v -H "Authorization: Bearer ${clash_secret}" -X PUT -d "{${selector}}" "127.0.0.1:${clash_ec_port}/proxies/${group}"
-        fi
-    done < ${selector_file}
+    if test -s ${selector_file};
+    then
+        get_ec_parameter
+        va="0"
+        while read line
+        do
+            if [ "$va" = "0" ];
+            then
+                va="1"
+                group=$(echo $line |tr -d '\n' |od -An -tx1|tr ' ' %|tr -d '\n')
+            else
+                va="0"
+                selector=$line
+                curl -v -H "Authorization: Bearer ${clash_secret}" -X PUT -d "{${selector}}" "127.0.0.1:${clash_ec_port}/proxies/${group}"
+            fi
+        done < ${selector_file}
+    else
+        echo -e "\033[7;32mselector.txt empty or not exist, selector restore abortion\033[0m"
+    fi
 }
 
 selector_record() {
@@ -49,8 +54,7 @@ selector_record() {
     then
         cp -f ${selector_tmp} ${selector_file}
     else
-        echo "Selector empty, selector.txt not updated"
-    fi
+        echo -e "\033[7;32mSelector empty, selector.txt not updated\033[0m"    fi
     rm -f ${selector_tmp}
 }
 
