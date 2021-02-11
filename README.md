@@ -1,1 +1,1 @@
-<h1 align="center">Clash For Magisk</h1>
+# Clash For Magisk
