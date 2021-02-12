@@ -1,14 +1,6 @@
 #!/system/bin/sh
 
-table_id="2021"
-mark_id="2021"
-pref_id="2021"
-system_gid="1000"
-dns_port="1053"
-tproxy_port="7893"
-tproxy_ip="127.0.0.1"
-iptables_wait="iptables -w 100"
-reserved_ip=(0.0.0.0/8 10.0.0.0/8 100.64.0.0/10 127.0.0.0/8 169.254.0.0/16 172.16.0.0/12 192.0.0.0/24 192.0.2.0/24 192.168.0.0/16 198.18.0.0/15 198.51.100.0/24 203.0.113.0/24 224.0.0.0/4 255.255.255.255/32 240.0.0.0/4)
+. /data/Clash/clash.config
 
 create_rule_rules() {
     ip rule add fwmark ${mark_id} table ${table_id} pref ${pref_id}
@@ -23,8 +15,8 @@ flush_rule_rules() {
 create_mangle_prerouting_chain() {
     ${iptables_wait} -t mangle -N CLASH_PRE
 
-    ${iptables_wait} -t mangle -A CLASH_PRE -p tcp -j TPROXY --on-ip ${tproxy_ip} --on-port ${tproxy_port} --tproxy-mark ${mark_id}
-    ${iptables_wait} -t mangle -A CLASH_PRE -p udp ! --dport 53 -j TPROXY --on-ip ${tproxy_ip} --on-port ${tproxy_port} --tproxy-mark ${mark_id}
+    ${iptables_wait} -t mangle -A CLASH_PRE -p tcp -j TPROXY --on-ip ${Clash_tproxy_ip} --on-port ${Clash_tproxy_port} --tproxy-mark ${mark_id}
+    ${iptables_wait} -t mangle -A CLASH_PRE -p udp ! --dport 53 -j TPROXY --on-ip ${Clash_tproxy_ip} --on-port ${Clash_tproxy_port} --tproxy-mark ${mark_id}
 }
 
 create_mangle_output_chain() {
@@ -51,25 +43,25 @@ create_mangle_output_filter() {
         ${iptables_wait} -t mangle -A FILTER_OUT_CLASH -d ${subnet} -j RETURN
     done
 
-    ${iptables_wait} -t mangle -A FILTER_OUT_CLASH -m owner ! --gid-owner ${system_gid} -j CLASH_OUT
+    ${iptables_wait} -t mangle -A FILTER_OUT_CLASH -m owner ! --gid-owner ${Clash_group} -j CLASH_OUT
 }
 
 create_nat_prerouting_dns() {
     ${iptables_wait} -t nat -N DNS_PRE
 
-    ${iptables_wait} -t nat -A DNS_PRE -p udp -j REDIRECT --to-port ${dns_port}
+    ${iptables_wait} -t nat -A DNS_PRE -p udp -j REDIRECT --to-port ${Clash_dns_port}
 }
 
 create_nat_output_dns() {
     ${iptables_wait} -t nat -N DNS_OUT
 
-    ${iptables_wait} -t nat -A DNS_OUT -p udp -j REDIRECT --to-port ${dns_port}
+    ${iptables_wait} -t nat -A DNS_OUT -p udp -j REDIRECT --to-port ${Clash_dns_port}
 }
 
 create_nat_output_filter() {
     ${iptables_wait} -t nat -N FILTER_OUT_DNS
 
-    ${iptables_wait} -t nat -A FILTER_OUT_DNS -m owner --gid-owner ${system_gid} -j RETURN
+    ${iptables_wait} -t nat -A FILTER_OUT_DNS -m owner --gid-owner ${Clash_group} -j RETURN
     ${iptables_wait} -t nat -A FILTER_OUT_DNS -p udp --dport 53 -j DNS_OUT
 }
 

@@ -1,32 +1,22 @@
 #!/system/bin/sh
 
-bin_name="clash"
-bin_path="/system/bin/${bin_name}"
-clash_data_dir="/data/Clash"
-config_file="${clash_data_dir}/config.yaml"
-geoip_file="${clash_data_dir}/Country.mmdb"
-run_path="${clash_data_dir}/run"
-pid_file="${run_path}/clash.pid"
-tproxy_port="7893"
-dns_port="1053"
-user_group="root:system"
-permissions="6755"
+. /data/Clash/clash.config
 
 start_clash() {
-    if [ -f ${config_file} ] && [ -f ${geoip_file} ] ; then
-        if $(${bin_path} -d ${clash_data_dir} -t > /dev/null) ; then
-            chown ${user_group} ${bin_path}
-            chmod ${permissions} ${bin_path}
-            mkdir -p ${run_path}
-            nohup ${bin_path} -d ${clash_data_dir} > /dev/null 2>&1 &
-            echo -n $! > ${pid_file}
+    if [ -f ${Clash_config_file} ] && [ -f ${Clash_geoip_file} ] ; then
+        if $(${Clash_bin_path} -d ${Clash_data_dir} -t > /dev/null) ; then
+            chown ${Clash_user_group} ${Clash_bin_path}
+            chmod ${Clash_permissions} ${Clash_bin_path}
+            mkdir -p ${Clash_run_path}
+            nohup ${Clash_bin_path} -d ${Clash_data_dir} > /dev/null 2>&1 &
+            echo -n $! > ${Clash_pid_file}
         fi
     fi
 }
 
 stop_clash() {
-    kill -15 `cat ${pid_file}`
-    rm -rf ${pid_file}
+    kill -15 `cat ${Clash_pid_file}`
+    rm -rf ${Clash_pid_file}
 }
 
 while getopts ":sk" signal ; do
