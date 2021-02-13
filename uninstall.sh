@@ -1,5 +1,5 @@
-clash_data_dir="/data/Clash"
+Clash_data_dir="/data/clash"
 
 rm_data() {
-    rm -rf ${clash_data_dir}
+    rm -rf ${Clash_data_dir}
 }

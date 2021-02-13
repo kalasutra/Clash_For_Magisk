@@ -3,7 +3,7 @@
 scripts=`realpath $0`
 scripts_dir=`dirname ${scripts}`
 old_local_ipv4=(127.0.0.1)
-. /data/Clash/clash.config
+. /data/clash/clash.config
 
 monitor_local_ipv4() {
     new_local_ipv4=$(ip a |awk '$1~/inet$/{print $2}')
@@ -32,7 +32,26 @@ keep_dns() {
     fi
 }
 
-while true ; do
-    keep_dns
-    sleep 1
+find_packages_uid() {
+    echo "" > ${appuid_file}
+    for package in `cat ${filter_packages_file} | sort -u` ; do
+        awk '$1~/'^"${package}"$'/{print $2}' ${system_packages_file} >> ${appuid_file}
+    done
+}
+
+while getopts ":kf" signal ; do
+    case ${signal} in
+        k)
+            while true ; do
+                keep_dns
+                sleep 2
+            done
+            ;;
+        f)
+            find_packages_uid
+            ;;
+        ?)
+            echo ""
+            ;;
+    esac
 done

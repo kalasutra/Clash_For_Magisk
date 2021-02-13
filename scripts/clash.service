@@ -1,6 +1,6 @@
 #!/system/bin/sh
 
-. /data/Clash/clash.config
+. /data/clash/clash.config
 
 start_clash() {
     if [ -f ${Clash_config_file} ] && [ -f ${Clash_geoip_file} ] ; then

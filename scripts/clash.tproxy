@@ -1,6 +1,8 @@
 #!/system/bin/sh
 
-. /data/Clash/clash.config
+scripts=`realpath $0`
+scripts_dir=`dirname ${scripts}`
+. /data/clash/clash.config
 
 create_rule_rules() {
     ip rule add fwmark ${mark_id} table ${table_id} pref ${pref_id}
@@ -37,13 +39,25 @@ create_mangle_prerouting_filter() {
 }
 
 create_mangle_output_filter() {
+    ${scripts_dir}/clash.tool -f
+
     ${iptables_wait} -t mangle -N FILTER_OUT_CLASH
 
     for subnet in ${reserved_ip[*]} ; do
         ${iptables_wait} -t mangle -A FILTER_OUT_CLASH -d ${subnet} -j RETURN
     done
 
-    ${iptables_wait} -t mangle -A FILTER_OUT_CLASH -m owner ! --gid-owner ${Clash_group} -j CLASH_OUT
+    if [ "${mode}" = "blacklist" ] ; then
+        for appuid in `cat ${appuid_file} | sort -u` ; do
+            ${iptables_wait} -t mangle -A FILTER_OUT_CLASH -m owner --uid-owner ${appuid} -j RETURN
+        done
+
+        ${iptables_wait} -t mangle -A FILTER_OUT_CLASH -m owner ! --gid-owner ${Clash_group} -j CLASH_OUT
+    elif [ "${mode}" = "whitelist" ] ; then
+        for appuid in `cat ${appuid_file} | sort -u` ; do
+            ${iptables_wait} -t mangle -A FILTER_OUT_CLASH -m owner --uid-owner ${appuid} -j CLASH_OUT
+        done
+    fi
 }
 
 create_nat_prerouting_dns() {
