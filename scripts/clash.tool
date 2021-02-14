@@ -2,26 +2,36 @@
 
 scripts=`realpath $0`
 scripts_dir=`dirname ${scripts}`
-old_local_ipv4=(127.0.0.1)
 . /data/clash/clash.config
 
 monitor_local_ipv4() {
-    new_local_ipv4=$(ip a |awk '$1~/inet$/{print $2}')
+    local_ipv4=$(ip a | awk '$1~/inet$/{print $2}')
+    local_ipv4_number=$(ip a | awk '$1~/inet$/{print $2}' | wc -l)
+    rules_ipv4=$(${iptables_wait} -t mangle -nvL FILTER_LOCAL_IPV4 | grep "RETURN" | awk '{print $9}')
+    rules_number=$(${iptables_wait} -t mangle -L FILTER_LOCAL_IPV4 | grep "RETURN" | wc -l)
 
-    for new_subnet in ${new_local_ipv4[*]} ; do
+    for rules_subnet in ${rules_ipv4[*]} ; do
         wait_count=0
-        for old_subnet in ${old_local_ipv4[*]} ; do
-            if [ "${new_subnet}" != "${old_subnet}" ] ; then
+        a_subnet=$(ipcalc -n ${rules_subnet} | awk -F '=' '{print $2}')
+
+        for local_subnet in ${local_ipv4[*]} ; do
+            b_subnet=$(ipcalc -n ${local_subnet} | awk -F '=' '{print $2}')
+
+            if [ "${a_subnet}" != "${b_subnet}" ] ; then
                 wait_count=$((${wait_count} + 1))
-                if [ wait_count -eq ${#old_local_ipv4[*]} ] ; then
-                    echo ${new_subnet}
+                
+                if [ ${wait_count} -ge ${local_ipv4_number} ] ; then
+                    ${iptables_wait} -t mangle -D FILTER_LOCAL_IPV4 -d ${rules_subnet} -j RETURN
                 fi
             fi
         done
-
     done
 
-    old_local_ipv4=${new_local_ipv4}
+    for subnet in ${local_ipv4[*]} ; do
+        if ! (${iptables_wait} -t mangle -C FILTER_LOCAL_IPV4 -d ${subnet} -j RETURN > /dev/null 2>&1) ; then
+            ${iptables_wait} -t mangle -A FILTER_LOCAL_IPV4 -d ${subnet} -j RETURN
+        fi
+    done
 }
 
 keep_dns() {
@@ -39,7 +49,7 @@ find_packages_uid() {
     done
 }
 
-while getopts ":kf" signal ; do
+while getopts ":kfm" signal ; do
     case ${signal} in
         k)
             while true ; do
@@ -49,6 +59,15 @@ while getopts ":kf" signal ; do
             ;;
         f)
             find_packages_uid
+            ;;
+        m)
+            while true ; do
+                until [ -f ${Clash_pid_file} ] ; do
+                    sleep 1
+                done
+                monitor_local_ipv4
+                sleep 2
+            done
             ;;
         ?)
             echo ""

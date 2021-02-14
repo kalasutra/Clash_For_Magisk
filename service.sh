@@ -5,7 +5,13 @@ done
 service_path=`realpath $0`
 module_dir=`dirname ${service_path}`
 scripts_dir="${module_dir}/scripts"
+Clash_pid_file="${Clash_run_path}/clash.pid"
+
+if [ -f ${Clash_pid_file} ] ; then
+    rm -rf ${Clash_pid_file}
+fi
 
 ${scripts_dir}/clash.service -s && ${scripts_dir}/clash.tproxy -s
 inotifyd ${scripts_dir}/clash.inotify ${module_dir} >> /dev/null &
 ${scripts_dir}/clash.tool -k &
+${scripts_dir}/clash.tool -m &
