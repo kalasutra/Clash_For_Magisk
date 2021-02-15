@@ -31,8 +31,6 @@ create_mangle_output_chain() {
 create_mangle_prerouting_filter() {
     ${iptables_wait} -t mangle -N FILTER_PRE_CLASH
 
-    ${iptables_wait} -t mangle -A FILTER_PRE_CLASH -j FILTER_LOCAL_IPV4
-
     for subnet in ${reserved_ip[*]} ; do
         ${iptables_wait} -t mangle -A FILTER_PRE_CLASH -d ${subnet} -j RETURN
     done
@@ -44,8 +42,6 @@ create_mangle_output_filter() {
     ${scripts_dir}/clash.tool -f
 
     ${iptables_wait} -t mangle -N FILTER_OUT_CLASH
-
-    ${iptables_wait} -t mangle -A FILTER_OUT_CLASH -j FILTER_LOCAL_IPV4
 
     for subnet in ${reserved_ip[*]} ; do
         ${iptables_wait} -t mangle -A FILTER_OUT_CLASH -d ${subnet} -j RETURN
@@ -90,8 +86,6 @@ create_nat_prerouting_filter() {
 }
 
 apply_rules() {
-    ${iptables_wait} -t mangle -N FILTER_LOCAL_IPV4
-
     create_mangle_prerouting_chain
     create_mangle_prerouting_filter
 
@@ -137,9 +131,6 @@ flush_rules() {
     ${iptables_wait} -t mangle -X FILTER_PRE_CLASH
     ${iptables_wait} -t mangle -F CLASH_PRE
     ${iptables_wait} -t mangle -X CLASH_PRE
-
-    ${iptables_wait} -t mangle -F FILTER_LOCAL_IPV4
-    ${iptables_wait} -t mangle -X FILTER_LOCAL_IPV4
 }
 
 while getopts ":sk" signal ; do
