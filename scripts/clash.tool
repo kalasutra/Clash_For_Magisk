@@ -62,7 +62,24 @@ find_packages_uid() {
     done
 }
 
-while getopts ":kfm" signal ; do
+port_detection() {
+    clash_pid=`cat ${Clash_pid_file}`
+    clash_port=$(ss -antup | grep "clash" | awk '$7~/'pid="${clash_pid}"*'/{print $5}' | awk -F ':' '{print $2}' | sort -u)
+    match_count=0
+    for sub_port in ${clash_port[*]} ; do
+        if [ "${sub_port}" = ${Clash_tproxy_port} ] || [ "${sub_port}" = ${Clash_dns_port} ] ; then
+            match_count=$((${match_count} + 1))
+        fi
+    done
+
+    if [ ${match_count} -ge 2 ] ; then
+        exit 0
+    else
+        exit 1
+    fi
+}
+
+while getopts ":kfmp" signal ; do
     case ${signal} in
         k)
             while true ; do
@@ -78,6 +95,10 @@ while getopts ":kfm" signal ; do
                 monitor_local_ipv4
                 sleep 2
             done
+            ;;
+        p)
+            sleep 5
+            port_detection
             ;;
         ?)
             echo ""

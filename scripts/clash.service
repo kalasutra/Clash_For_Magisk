@@ -1,16 +1,30 @@
 #!/system/bin/sh
 
+scripts=`realpath $0`
+scripts_dir=`dirname ${scripts}`
 . /data/clash/clash.config
 
 start_clash() {
+    if [ -f "${Clash_bin_path}" ] ; then
+        chown ${Clash_user_group} ${Clash_bin_path}
+        chmod ${Clash_permissions} ${Clash_bin_path}
+        setcap 'cap_net_admin,cap_net_raw+ep' ${Clash_bin_path}
+    else
+        exit 1
+    fi
+
     if [ -f ${Clash_config_file} ] && [ -f ${Clash_geoip_file} ] ; then
         if $(${Clash_bin_path} -d ${Clash_data_dir} -t > /dev/null) ; then
-            chown ${Clash_user_group} ${Clash_bin_path}
-            chmod ${Clash_permissions} ${Clash_bin_path}
             mkdir -p ${Clash_run_path}
             nohup ${Clash_bin_path} -d ${Clash_data_dir} > /dev/null 2>&1 &
             echo -n $! > ${Clash_pid_file}
         fi
+    fi
+
+    if ! (${scripts_dir}/clash.tool -p) ; then
+        kill -15 `cat ${Clash_pid_file}`
+        rm -rf ${Clash_pid_file}
+        exit 1
     fi
 }
 
