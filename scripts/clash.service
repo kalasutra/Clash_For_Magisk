@@ -6,8 +6,10 @@ scripts_dir=`dirname ${scripts}`
 
 start_clash() {
     if [ -f "${Clash_bin_path}" ] ; then
+        mkdir -p ${Clash_run_path}
         chown ${Clash_user_group} ${Clash_bin_path}
         chmod ${Clash_permissions} ${Clash_bin_path}
+        chmod 0644 ${Clash_config_file}
         setcap 'cap_net_admin,cap_net_raw+ep' ${Clash_bin_path}
     else
         exit 1
@@ -15,7 +17,6 @@ start_clash() {
 
     if [ -f ${Clash_config_file} ] && [ -f ${Clash_geoip_file} ] ; then
         if $(${Clash_bin_path} -d ${Clash_data_dir} -t > /dev/null) ; then
-            mkdir -p ${Clash_run_path}
             nohup ${Clash_bin_path} -d ${Clash_data_dir} > /dev/null 2>&1 &
             echo -n $! > ${Clash_pid_file}
         fi

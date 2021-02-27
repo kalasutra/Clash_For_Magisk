@@ -56,7 +56,7 @@ keep_dns() {
 }
 
 find_packages_uid() {
-    echo "" > ${appuid_file}
+    echo "1001" > ${appuid_file}
     for package in `cat ${filter_packages_file} | sort -u` ; do
         awk '$1~/'^"${package}"$'/{print $2}' ${system_packages_file} >> ${appuid_file}
     done

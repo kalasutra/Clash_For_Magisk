@@ -1,0 +1,31 @@
+tproxy-port: 7893
+bind-address: '127.0.0.1'
+mode: rule
+log-level: silent
+ipv6: false
+dns:
+    enable: true
+    listen: 127.0.0.1:1053
+    ipv6: false
+    default-nameserver:
+        - 114.114.114.114
+        - 8.8.8.8
+        - 223.5.5.5
+        - 1.1.1.1
+    enhanced-mode: redir-host
+    nameserver:
+        - https://dns.alidns.com/dns-query
+        - https://doh.pub/dns-query
+    fallback:
+        - https://dns.google/dns-query
+        - https://cloudflare-dns.com/dns-query
+        - https://doh.opendns.com/dns-query
+        - https://dns.adguard.com/dns-query
+    fallback-filter:
+        geoip: true
+        ipcidr:
+            - 240.0.0.0/4
+        domain:
+            - '+.google.com'
+            - '+.facebook.com'
+            - '+.youtube.com'

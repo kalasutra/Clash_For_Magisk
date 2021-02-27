@@ -69,6 +69,7 @@ if [ "$(md5sum ${MODPATH}/clash.config | awk '{print $1}')" != "$(md5sum ${mod_c
     fi
     mv ${MODPATH}/clash.config ${clash_data_dir}/
 fi
+mv ${MODPATH}/template ${clash_data_dir}/
 mv -f ${MODPATH}/libcap/${ARCH}/setcap ${MODPATH}/system/bin/
 mv -f ${MODPATH}/libcap/${ARCH}/getcap ${MODPATH}/system/bin/
 mv -f ${MODPATH}/libcap/${ARCH}/getpcaps ${MODPATH}/system/bin/
