@@ -18,7 +18,7 @@ monitor_local_ipv4() {
             fi
         done
         
-        sleep 1
+        sleep 10
     done
 
     for rules_subnet in ${rules_ipv4[*]} ; do
@@ -56,7 +56,11 @@ keep_dns() {
 }
 
 find_packages_uid() {
-    echo "1001" > ${appuid_file}
+    if [ "${mode}" = "blacklist" ] ; then
+        echo "1001" > ${appuid_file}
+    elif [ "${mode}" = "whitelist" ] ; then
+        echo "" > ${appuid_file}
+    fi
     for package in `cat ${filter_packages_file} | sort -u` ; do
         awk '$1~/'^"${package}"$'/{print $2}' ${system_packages_file} >> ${appuid_file}
     done
@@ -84,7 +88,7 @@ while getopts ":kfmp" signal ; do
         k)
             while true ; do
                 keep_dns
-                sleep 2
+                sleep 5
             done
             ;;
         f)
@@ -93,7 +97,7 @@ while getopts ":kfmp" signal ; do
         m)
             while true ; do
                 monitor_local_ipv4
-                sleep 2
+                sleep 5
             done
             ;;
         p)
