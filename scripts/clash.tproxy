@@ -136,10 +136,18 @@ flush_rules() {
 while getopts ":sk" signal ; do
     case ${signal} in
         s)
-            create_rule_rules && apply_rules
+            if [ "${mode}" = "blacklist" ] || [ "${mode}" = "whitelist" ] ; then
+                create_rule_rules && apply_rules
+            else
+                exit 0
+            fi
             ;;
         k)
-            flush_rule_rules && flush_rules
+            if [ "${mode}" = "blacklist" ] || [ "${mode}" = "whitelist" ] ; then
+                flush_rule_rules && flush_rules
+            else
+                exit 0
+            fi
             ;;
         ?)
             echo ""

@@ -45,6 +45,14 @@ monitor_local_ipv4() {
             ${iptables_wait} -t mangle -I PREROUTING -d ${subnet} -j RETURN
         fi
     done
+
+    unset local_ipv4
+    unset local_ipv4_number
+    unset rules_ipv4
+    unset rules_number
+    unset wait_count
+    unset a_subnet
+    unset b_subnet
 }
 
 keep_dns() {
@@ -52,6 +60,14 @@ keep_dns() {
 
     if [ "${local_dns}" != "${static_dns}" ] ; then
         setprop net.dns1 ${static_dns}
+    fi
+
+    unset local_dns
+}
+
+subscription() {
+    if [ "${auto_subscription}" = "true" ] ; then
+        curl -A 'clash' ${subscription_url} -o ${Clash_config_file} >> /dev/null 2>&1
     fi
 }
 
@@ -83,8 +99,14 @@ port_detection() {
     fi
 }
 
-while getopts ":kfmp" signal ; do
+while getopts ":kfmps" signal ; do
     case ${signal} in
+        s)
+            while true ; do
+                subscription
+                sleep ${update_interval}
+            done
+            ;;
         k)
             while true ; do
                 keep_dns

@@ -2,15 +2,16 @@ SKIPUNZIP=1
 
 wait_count=0
 architecture=""
-required_version=""
 system_gid="1000"
 system_uid="1000"
+required_version=""
 clash_data_dir="/data/clash"
-geoip_file_path="${clash_data_dir}/Country.mmdb"
-mod_config="${clash_data_dir}/clash.config"
 modules_dir="/data/adb/modules"
-wget_https_disable="wget --no-check-certificate"
+ca_path="/system/etc/security/cacerts"
 CPFM_mode_dir="${modules_dir}/clash_premium"
+mod_config="${clash_data_dir}/clash.config"
+geoip_file_path="${clash_data_dir}/Country.mmdb"
+wget_https_disable="wget --no-check-certificate"
 clash_releases_link="https://github.com/Dreamacro/clash/releases"
 geoip_download_link="https://github.com/Hackl0us/GeoIP2-CN/raw/release/Country.mmdb"
 
@@ -34,8 +35,8 @@ case "${ARCH}" in
 esac
 
 mkdir -p ${MODPATH}/system/bin
-mkdir -p ${MODPATH}/system/lib64
 mkdir -p ${clash_data_dir}
+mkdir -p ${MODPATH}${ca_path}
 
 if [ ! -f ${geoip_file_path} ] ; then
     ui_print "- 开始下载Country.mmdb."
@@ -72,11 +73,9 @@ fi
 if [ ! -f "${clash_data_dir}/template" ] ; then
     mv ${MODPATH}/template ${clash_data_dir}/
 fi
-mv -f ${MODPATH}/libcap/${ARCH}/setcap ${MODPATH}/system/bin/
-mv -f ${MODPATH}/libcap/${ARCH}/getcap ${MODPATH}/system/bin/
-mv -f ${MODPATH}/libcap/${ARCH}/getpcaps ${MODPATH}/system/bin/
-mv -f ${MODPATH}/libcap/${ARCH}/libcap.so ${MODPATH}/system/lib64/
-rm -rf ${MODPATH}/libcap
+mv -f ${MODPATH}/binary/${ARCH}/* ${MODPATH}/system/bin/
+mv -f ${MODPATH}/cacert.pem ${MODPATH}${ca_path}
+rm -rf ${MODPATH}/binary
 
 if [ ! -f "${clash_data_dir}/packages.list" ] ; then
     touch ${clash_data_dir}/packages.list
@@ -91,7 +90,8 @@ set_perm_recursive ${MODPATH} 0 0 0755 0644
 set_perm  ${MODPATH}/system/bin/setcap  0  0  0755
 set_perm  ${MODPATH}/system/bin/getcap  0  0  0755
 set_perm  ${MODPATH}/system/bin/getpcaps  0  0  0755
-set_perm  ${MODPATH}/system/lib64/libcap.so  0  0  0644
+set_perm  ${MODPATH}${ca_path}/cacert.pem 0 0 0644
+set_perm  ${MODPATH}/system/bin/curl 0 0 0755
 set_perm_recursive ${MODPATH}/scripts ${system_uid} ${system_gid} 0755 0755
 set_perm_recursive ${clash_data_dir} ${system_uid} ${system_gid} 0755 0644
 set_perm  ${MODPATH}/system/bin/clash  ${system_uid}  ${system_gid}  6755
