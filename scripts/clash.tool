@@ -67,7 +67,7 @@ keep_dns() {
 
 subscription() {
     if [ "${auto_subscription}" = "true" ] ; then
-        curl -A 'clash' ${subscription_url} -o ${Clash_config_file} >> /dev/null 2>&1
+        curl -L -A 'clash' ${subscription_url} -o ${Clash_config_file} >> /dev/null 2>&1
     fi
 }
 
