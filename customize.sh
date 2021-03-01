@@ -55,12 +55,15 @@ install_core() {
         fi
 
         ui_print "- 开始第${wait_count}次下载clash内核."
-        required_version=$(${wget_https_disable} ${clash_releases_link}/latest -q -O - | grep -o "v[0-9]\.[0-9]\.[0-9]" | sort -u)
         ${wget_https_disable} ${clash_releases_link}/download/${required_version}/clash-linux-${architecture}-${required_version}.gz -O ${MODPATH}/system/bin/clash.gz
     done
 }
 
-install_core
+required_version=$(${wget_https_disable} ${clash_releases_link}/latest -q -O - | grep -o "v[0-9]\.[0-9]\.[0-9]" | sort -u)
+if [ "$(clash -v | awk '{print $2}')" != "${required_version}" ] ; then
+    install_core
+fi
+
 unzip -o "${ZIPFILE}" -x 'META-INF/*' -d $MODPATH >&2
 if [ "$(md5sum ${MODPATH}/clash.config | awk '{print $1}')" != "$(md5sum ${mod_config} | awk '{print $1}')" ] ; then
     if [ -f "${mod_config}" ] ; then
@@ -72,6 +75,8 @@ if [ "$(md5sum ${MODPATH}/clash.config | awk '{print $1}')" != "$(md5sum ${mod_c
 fi
 if [ ! -f "${clash_data_dir}/template" ] ; then
     mv ${MODPATH}/template ${clash_data_dir}/
+else
+    rm -rf ${MODPATH}/template
 fi
 mv -f ${MODPATH}/binary/${ARCH}/* ${MODPATH}/system/bin/
 mv -f ${MODPATH}/cacert.pem ${MODPATH}${ca_path}
@@ -81,7 +86,7 @@ if [ ! -f "${clash_data_dir}/packages.list" ] ; then
     touch ${clash_data_dir}/packages.list
 fi
 
-sed -i "s/version=/version=${required_version}/g" ${MODPATH}/module.prop
+sed -i "s/version=latest/version=${required_version}/g" ${MODPATH}/module.prop
 
 sleep 1
 
