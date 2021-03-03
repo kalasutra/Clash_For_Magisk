@@ -12,6 +12,14 @@
 
 * 不能承诺每次更新都不会出问题,包括不限于无法使用,请考虑好在选择是否更新,或加入telegram群进行讨论,telegram群组[Dashboard 闲聊吹水[NSFJB]](https://t.me/blowH2O).
 
+## 安装
+
+通过Magisk Manager安装.
+
+## 卸载
+
+通过Magisk Manager卸载.
+
 ## 配置
 
 模块目录: `{magisk 安装目录}/Clash_For_Magisk`

@@ -1,6 +1,6 @@
 id=Clash_For_Magisk
 name=Clash For Magisk
-version=latest
+version=v1.4.1
 versionCode=20210206
 author=kalasutra
 description=利用tproxy支持Clash的透明代理.

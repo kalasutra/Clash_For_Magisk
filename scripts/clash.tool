@@ -11,14 +11,18 @@ monitor_local_ipv4() {
     rules_number=$(${iptables_wait} -t mangle -L OUTPUT | grep "RETURN" | wc -l)
 
     until [ -f ${Clash_pid_file} ] ; do
+        sleep 1
         for subnet in ${local_ipv4[*]} ; do
             if (${iptables_wait} -t mangle -C OUTPUT -d ${subnet} -j RETURN > /dev/null 2>&1) ; then
+                sleep 1
                 ${iptables_wait} -t mangle -D OUTPUT -d ${subnet} -j RETURN
+                sleep 1
                 ${iptables_wait} -t mangle -D PREROUTING -d ${subnet} -j RETURN
+                sleep 1
             fi
         done
         
-        sleep 10
+        sleep 6
     done
 
     for rules_subnet in ${rules_ipv4[*]} ; do
@@ -32,8 +36,11 @@ monitor_local_ipv4() {
                 wait_count=$((${wait_count} + 1))
                 
                 if [ ${wait_count} -ge ${local_ipv4_number} ] ; then
+                    sleep 1
                     ${iptables_wait} -t mangle -D OUTPUT -d ${rules_subnet} -j RETURN
+                    sleep 1
                     ${iptables_wait} -t mangle -D PREROUTING -d ${rules_subnet} -j RETURN
+                    sleep 1
                 fi
             fi
         done
@@ -41,8 +48,11 @@ monitor_local_ipv4() {
 
     for subnet in ${local_ipv4[*]} ; do
         if ! (${iptables_wait} -t mangle -C OUTPUT -d ${subnet} -j RETURN > /dev/null 2>&1) ; then
+            sleep 1
             ${iptables_wait} -t mangle -I OUTPUT -d ${subnet} -j RETURN
+            sleep 1
             ${iptables_wait} -t mangle -I PREROUTING -d ${subnet} -j RETURN
+            sleep 1
         fi
     done
 
@@ -67,7 +77,13 @@ keep_dns() {
 
 subscription() {
     if [ "${auto_subscription}" = "true" ] ; then
+        mv ${Clash_config_file} ${Clash_data_dir}/config.yaml.backup
         curl -L -A 'clash' ${subscription_url} -o ${Clash_config_file} >> /dev/null 2>&1
+        if $? && [ -f "${Clash_config_file}" ]; then
+            rm -rf ${Clash_data_dir}/config.yaml.backup
+        else
+            mv ${Clash_data_dir}/config.yaml.backup ${Clash_config_file}
+        fi
     fi
 }
 
@@ -119,7 +135,6 @@ while getopts ":kfmps" signal ; do
         m)
             while true ; do
                 monitor_local_ipv4
-                sleep 5
             done
             ;;
         p)

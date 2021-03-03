@@ -2,6 +2,8 @@ until [ $(getprop sys.boot_completed) -eq 1 ] ; do
     sleep 5
 done
 
+sleep 5
+
 service_path=`realpath $0`
 module_dir=`dirname ${service_path}`
 scripts_dir="${module_dir}/scripts"
