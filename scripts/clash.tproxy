@@ -85,6 +85,14 @@ create_nat_prerouting_filter() {
     ${iptables_wait} -t nat -A FILTER_PRE_DNS -p udp --dport 53 -j DNS_PRE
 }
 
+create_mangle_prerouting_divert() {
+    ${iptables_wait} -t mangle -N DIVERT
+
+    ${iptables_wait} -t mangle -A DIVERT -j MARK --set-mark ${mark_id}
+
+    ${iptables_wait} -t mangle -A DIVERT -j ACCEPT
+}
+
 apply_rules() {
     create_mangle_prerouting_chain
     create_mangle_prerouting_filter
@@ -97,6 +105,9 @@ apply_rules() {
 
     create_nat_output_dns
     create_nat_output_filter
+
+    create_mangle_prerouting_divert
+    ${iptables_wait} -t mangle -A PREROUTING -m socket -j DIVERT
 
     ${iptables_wait} -t mangle -A PREROUTING -j FILTER_PRE_CLASH
     ${iptables_wait} -t mangle -A OUTPUT -j FILTER_OUT_CLASH
@@ -111,6 +122,10 @@ flush_rules() {
 
     ${iptables_wait} -t mangle -D OUTPUT -j FILTER_OUT_CLASH
     ${iptables_wait} -t mangle -D PREROUTING -j FILTER_PRE_CLASH
+
+    ${iptables_wait} -t mangle -D PREROUTING -m socket -j DIVERT
+    ${iptables_wait} -t mangle -F DIVERT
+    ${iptables_wait} -t mangle -X DIVERT
 
     ${iptables_wait} -t nat -F FILTER_OUT_DNS
     ${iptables_wait} -t nat -X FILTER_OUT_DNS
