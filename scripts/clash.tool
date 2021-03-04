@@ -14,55 +14,49 @@ monitor_local_ipv4() {
         sleep 1
         for subnet in ${local_ipv4[*]} ; do
             if (${iptables_wait} -t mangle -C OUTPUT -d ${subnet} -j RETURN > /dev/null 2>&1) ; then
-                sleep 1
                 ${iptables_wait} -t mangle -D OUTPUT -d ${subnet} -j RETURN
-                sleep 1
                 ${iptables_wait} -t mangle -D PREROUTING -d ${subnet} -j RETURN
-                sleep 1
             fi
         done
-        
-        sleep 6
     done
 
-    for rules_subnet in ${rules_ipv4[*]} ; do
-        wait_count=0
-        a_subnet=$(ipcalc -n ${rules_subnet} | awk -F '=' '{print $2}')
+    if [ ${local_ipv4_number} -ne ${rules_number} ] ; then
+        for rules_subnet in ${rules_ipv4[*]} ; do
+            wait_count=0
+            a_subnet=$(ipcalc -n ${rules_subnet} | awk -F '=' '{print $2}')
 
-        for local_subnet in ${local_ipv4[*]} ; do
-            b_subnet=$(ipcalc -n ${local_subnet} | awk -F '=' '{print $2}')
+            for local_subnet in ${local_ipv4[*]} ; do
+                b_subnet=$(ipcalc -n ${local_subnet} | awk -F '=' '{print $2}')
 
-            if [ "${a_subnet}" != "${b_subnet}" ] ; then
-                wait_count=$((${wait_count} + 1))
-                
-                if [ ${wait_count} -ge ${local_ipv4_number} ] ; then
-                    sleep 1
-                    ${iptables_wait} -t mangle -D OUTPUT -d ${rules_subnet} -j RETURN
-                    sleep 1
-                    ${iptables_wait} -t mangle -D PREROUTING -d ${rules_subnet} -j RETURN
-                    sleep 1
+                if [ "${a_subnet}" != "${b_subnet}" ] ; then
+                    wait_count=$((${wait_count} + 1))
+                    
+                    if [ ${wait_count} -ge ${local_ipv4_number} ] ; then
+                        ${iptables_wait} -t mangle -D OUTPUT -d ${rules_subnet} -j RETURN
+                        ${iptables_wait} -t mangle -D PREROUTING -d ${rules_subnet} -j RETURN
+                    fi
                 fi
+            done
+        done
+
+        for subnet in ${local_ipv4[*]} ; do
+            if ! (${iptables_wait} -t mangle -C OUTPUT -d ${subnet} -j RETURN > /dev/null 2>&1) ; then
+                ${iptables_wait} -t mangle -I OUTPUT -d ${subnet} -j RETURN
+                ${iptables_wait} -t mangle -I PREROUTING -d ${subnet} -j RETURN
             fi
         done
-    done
 
-    for subnet in ${local_ipv4[*]} ; do
-        if ! (${iptables_wait} -t mangle -C OUTPUT -d ${subnet} -j RETURN > /dev/null 2>&1) ; then
-            sleep 1
-            ${iptables_wait} -t mangle -I OUTPUT -d ${subnet} -j RETURN
-            sleep 1
-            ${iptables_wait} -t mangle -I PREROUTING -d ${subnet} -j RETURN
-            sleep 1
-        fi
-    done
+        unset a_subnet
+        unset b_subnet
+    else
+        sleep 1
+    fi
 
     unset local_ipv4
     unset local_ipv4_number
     unset rules_ipv4
     unset rules_number
     unset wait_count
-    unset a_subnet
-    unset b_subnet
 }
 
 keep_dns() {
@@ -77,7 +71,7 @@ keep_dns() {
 
 subscription() {
     if [ "${auto_subscription}" = "true" ] ; then
-        mv ${Clash_config_file} ${Clash_data_dir}/config.yaml.backup
+        mv -f ${Clash_config_file} ${Clash_data_dir}/config.yaml.backup
         curl -L -A 'clash' ${subscription_url} -o ${Clash_config_file} >> /dev/null 2>&1
         if $? && [ -f "${Clash_config_file}" ]; then
             rm -rf ${Clash_data_dir}/config.yaml.backup
@@ -89,7 +83,7 @@ subscription() {
 
 find_packages_uid() {
     if [ "${mode}" = "blacklist" ] ; then
-        echo "1001" > ${appuid_file}
+        echo "1001 1010 1014 1016" > ${appuid_file}
     elif [ "${mode}" = "whitelist" ] ; then
         echo "" > ${appuid_file}
     fi
@@ -119,14 +113,15 @@ while getopts ":kfmps" signal ; do
     case ${signal} in
         s)
             while true ; do
+                sleep 1
                 subscription
                 sleep ${update_interval}
             done
             ;;
         k)
             while true ; do
+                sleep 1
                 keep_dns
-                sleep 5
             done
             ;;
         f)
@@ -134,6 +129,7 @@ while getopts ":kfmps" signal ; do
             ;;
         m)
             while true ; do
+                sleep 1
                 monitor_local_ipv4
             done
             ;;
