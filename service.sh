@@ -15,4 +15,4 @@ ${scripts_dir}/clash.service -s && ${scripts_dir}/clash.tproxy -s
 inotifyd ${scripts_dir}/clash.inotify ${module_dir} >> /dev/null &
 ${scripts_dir}/clash.tool -s &
 ${scripts_dir}/clash.tool -k &
-${scripts_dir}/clash.tool -m &
+# ${scripts_dir}/clash.tool -m &

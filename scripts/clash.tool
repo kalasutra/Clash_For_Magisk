@@ -13,9 +13,11 @@ monitor_local_ipv4() {
     until [ -f ${Clash_pid_file} ] ; do
         sleep 1
         for subnet in ${local_ipv4[*]} ; do
+            sleep 0.5
             if (${iptables_wait} -t mangle -C OUTPUT -d ${subnet} -j RETURN > /dev/null 2>&1) ; then
                 ${iptables_wait} -t mangle -D OUTPUT -d ${subnet} -j RETURN
                 ${iptables_wait} -t mangle -D PREROUTING -d ${subnet} -j RETURN
+                wait
             fi
         done
     done
@@ -24,8 +26,9 @@ monitor_local_ipv4() {
         for rules_subnet in ${rules_ipv4[*]} ; do
             wait_count=0
             a_subnet=$(ipcalc -n ${rules_subnet} | awk -F '=' '{print $2}')
-
+            sleep 0.5
             for local_subnet in ${local_ipv4[*]} ; do
+                sleep 0.5
                 b_subnet=$(ipcalc -n ${local_subnet} | awk -F '=' '{print $2}')
 
                 if [ "${a_subnet}" != "${b_subnet}" ] ; then
@@ -34,15 +37,18 @@ monitor_local_ipv4() {
                     if [ ${wait_count} -ge ${local_ipv4_number} ] ; then
                         ${iptables_wait} -t mangle -D OUTPUT -d ${rules_subnet} -j RETURN
                         ${iptables_wait} -t mangle -D PREROUTING -d ${rules_subnet} -j RETURN
+                        wait
                     fi
                 fi
             done
         done
 
         for subnet in ${local_ipv4[*]} ; do
+            sleep 0.5
             if ! (${iptables_wait} -t mangle -C OUTPUT -d ${subnet} -j RETURN > /dev/null 2>&1) ; then
                 ${iptables_wait} -t mangle -I OUTPUT -d ${subnet} -j RETURN
                 ${iptables_wait} -t mangle -I PREROUTING -d ${subnet} -j RETURN
+                wait
             fi
         done
 
@@ -51,6 +57,8 @@ monitor_local_ipv4() {
     else
         sleep 1
     fi
+
+    wait
 
     unset local_ipv4
     unset local_ipv4_number
@@ -100,6 +108,7 @@ port_detection() {
     clash_port=$(ss -antup | grep "clash" | awk '$7~/'pid="${clash_pid}"*'/{print $5}' | awk -F ':' '{print $2}' | sort -u)
     match_count=0
     for sub_port in ${clash_port[*]} ; do
+        sleep 0.5
         if [ "${sub_port}" = ${Clash_tproxy_port} ] || [ "${sub_port}" = ${Clash_dns_port} ] ; then
             match_count=$((${match_count} + 1))
         fi
@@ -116,7 +125,7 @@ while getopts ":kfmps" signal ; do
     case ${signal} in
         s)
             while true ; do
-                sleep 1
+                sleep 0.5
                 subscription
                 sleep ${update_interval}
             done
@@ -125,6 +134,7 @@ while getopts ":kfmps" signal ; do
             while true ; do
                 sleep 10
                 keep_dns
+                wait
             done
             ;;
         f)
@@ -132,8 +142,9 @@ while getopts ":kfmps" signal ; do
             ;;
         m)
             while true ; do
-                sleep 1
+                sleep 0.5
                 monitor_local_ipv4
+                wait
             done
             ;;
         p)
