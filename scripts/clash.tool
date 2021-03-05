@@ -73,7 +73,10 @@ subscription() {
     if [ "${auto_subscription}" = "true" ] ; then
         mv -f ${Clash_config_file} ${Clash_data_dir}/config.yaml.backup
         curl -L -A 'clash' ${subscription_url} -o ${Clash_config_file} >> /dev/null 2>&1
-        if $? && [ -f "${Clash_config_file}" ]; then
+
+        sleep 20
+
+        if [ -f "${Clash_config_file}" ]; then
             rm -rf ${Clash_data_dir}/config.yaml.backup
         else
             mv ${Clash_data_dir}/config.yaml.backup ${Clash_config_file}
@@ -83,7 +86,7 @@ subscription() {
 
 find_packages_uid() {
     if [ "${mode}" = "blacklist" ] ; then
-        echo "1001 1010 1014 1016" > ${appuid_file}
+        echo "1000 1001 1010 1014 1016" > ${appuid_file}
     elif [ "${mode}" = "whitelist" ] ; then
         echo "" > ${appuid_file}
     fi
@@ -120,7 +123,7 @@ while getopts ":kfmps" signal ; do
             ;;
         k)
             while true ; do
-                sleep 1
+                sleep 10
                 keep_dns
             done
             ;;
