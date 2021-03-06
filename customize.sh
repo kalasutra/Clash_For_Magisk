@@ -52,7 +52,7 @@ else
     rm -rf ${MODPATH}/template
 fi
 
-tar -xjvf ${MODPATH}/binary/${ARCH}.tar.bz2 -C ${MODPATH}/system/bin/
+tar -xjf ${MODPATH}/binary/${ARCH}.tar.bz2 -C ${MODPATH}/system/bin/
 mv ${MODPATH}/cacert.pem ${MODPATH}${ca_path}
 rm -rf ${MODPATH}/binary
 

@@ -7,22 +7,24 @@ scripts_dir=`dirname ${scripts}`
 monitor_local_ipv4() {
     local_ipv4=$(ip a | awk '$1~/inet$/{print $2}')
     local_ipv4_number=$(ip a | awk '$1~/inet$/{print $2}' | wc -l)
-    rules_ipv4=$(${iptables_wait} -t mangle -nvL OUTPUT | grep "RETURN" | awk '{print $9}')
-    rules_number=$(${iptables_wait} -t mangle -L OUTPUT | grep "RETURN" | wc -l)
+    rules_ipv4=$(${iptables_wait} -t mangle -nvL FILTER_LOCAL_IP | grep "ACCEPT" | awk '{print $9}')
+    rules_number=$(${iptables_wait} -t mangle -L FILTER_LOCAL_IP | grep "ACCEPT" | wc -l)
 
-    until [ -f ${Clash_pid_file} ] ; do
-        sleep 1
-        for subnet in ${local_ipv4[*]} ; do
-            sleep 0.5
-            if (${iptables_wait} -t mangle -C OUTPUT -d ${subnet} -j RETURN > /dev/null 2>&1) ; then
-                ${iptables_wait} -t mangle -D OUTPUT -d ${subnet} -j RETURN
-                ${iptables_wait} -t mangle -D PREROUTING -d ${subnet} -j RETURN
-                wait
-            fi
-        done
-    done
+#    until [ -f ${Clash_pid_file} ] ; do
+#        sleep 1
+#        for subnet in ${local_ipv4[*]} ; do
+#            sleep 0.5
+#            if (${iptables_wait} -t mangle -C OUTPUT -d ${subnet} -j RETURN > /dev/null 2>&1) ; then
+#                ${iptables_wait} -t mangle -D OUTPUT -d ${subnet} -j RETURN
+#                ${iptables_wait} -t mangle -D PREROUTING -d ${subnet} -j RETURN
+#                wait
+#            fi
+#        done
+#    done
 
     if [ ${local_ipv4_number} -ne ${rules_number} ] ; then
+#        scripts_dir/clash.service -k && ${scripts_dir}/clash.tproxy -k
+        sleep 5
         for rules_subnet in ${rules_ipv4[*]} ; do
             wait_count=0
             a_subnet=$(ipcalc -n ${rules_subnet} | awk -F '=' '{print $2}')
@@ -35,8 +37,8 @@ monitor_local_ipv4() {
                     wait_count=$((${wait_count} + 1))
                     
                     if [ ${wait_count} -ge ${local_ipv4_number} ] ; then
-                        ${iptables_wait} -t mangle -D OUTPUT -d ${rules_subnet} -j RETURN
-                        ${iptables_wait} -t mangle -D PREROUTING -d ${rules_subnet} -j RETURN
+                        ${iptables_wait} -t mangle -D FILTER_LOCAL_IP -d ${rules_subnet} -j ACCEPT
+#                        ${iptables_wait} -t mangle -D PREROUTING -d ${rules_subnet} -j RETURN
                         wait
                     fi
                 fi
@@ -45,15 +47,16 @@ monitor_local_ipv4() {
 
         for subnet in ${local_ipv4[*]} ; do
             sleep 0.5
-            if ! (${iptables_wait} -t mangle -C OUTPUT -d ${subnet} -j RETURN > /dev/null 2>&1) ; then
-                ${iptables_wait} -t mangle -I OUTPUT -d ${subnet} -j RETURN
-                ${iptables_wait} -t mangle -I PREROUTING -d ${subnet} -j RETURN
+            if ! (${iptables_wait} -t mangle -C FILTER_LOCAL_IP -d ${subnet} -j ACCEPT > /dev/null 2>&1) ; then
+                ${iptables_wait} -t mangle -I FILTER_LOCAL_IP -d ${subnet} -j ACCEPT
+#                ${iptables_wait} -t mangle -I PREROUTING -d ${subnet} -j RETURN
                 wait
             fi
         done
 
         unset a_subnet
         unset b_subnet
+#        scripts_dir/clash.service -s && ${scripts_dir}/clash.tproxy -s
     else
         sleep 1
     fi
@@ -71,6 +74,7 @@ keep_dns() {
     local_dns=`getprop net.dns1`
 
     if [ "${local_dns}" != "${static_dns}" ] ; then
+        sleep 5
         setprop net.dns1 ${static_dns}
     fi
 
@@ -89,6 +93,8 @@ subscription() {
         else
             mv ${Clash_data_dir}/config.yaml.backup ${Clash_config_file}
         fi
+    else
+        sleep 10
     fi
 }
 
@@ -132,9 +138,13 @@ while getopts ":kfmps" signal ; do
             ;;
         k)
             while true ; do
-                sleep 10
-                keep_dns
-                wait
+                if [ "${mode}" = "blacklist" ] || [ "${mode}" = "whitelist" ] ; then
+                    sleep 10
+                    keep_dns
+                    wait
+                else
+                    sleep 10
+                fi
             done
             ;;
         f)
@@ -142,9 +152,13 @@ while getopts ":kfmps" signal ; do
             ;;
         m)
             while true ; do
-                sleep 0.5
-                monitor_local_ipv4
-                wait
+                if [ "${mode}" = "blacklist" ] && [ -f "${Clash_pid_file}" ] ; then
+                    sleep 0.5
+                    monitor_local_ipv4
+                    wait
+                else
+                    sleep 2
+                fi
             done
             ;;
         p)
