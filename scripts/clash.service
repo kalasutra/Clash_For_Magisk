@@ -20,10 +20,14 @@ start_clash() {
         touch ${Clash_run_path}/root
         chmod 0600 ${Clash_run_path}/root
 
-        com="${scripts_dir}/clash.tool -m ; sleep 10 ;${scripts_dir}/clash.tool -m ; sleep 10; ${scripts_dir}/clash.tool -m ;sleep 10; ${scripts_dir}/clash.tool -m;sleep 10;${scripts_dir}/clash.tool -m ; sleep 10;${scripts_dir}/clash.tool -m"
         echo "${update_interval} ${scripts_dir}/clash.tool -s" > ${Clash_run_path}/root
         echo "*/1 * * * * ${scripts_dir}/clash.tool -k" >> ${Clash_run_path}/root
-        echo "*/1 * * * * ${com}" >> ${Clash_run_path}/root
+
+        if [ "${filter_local}" = "true" ] ; then
+            com="${scripts_dir}/clash.tool -m ; sleep 10 ;${scripts_dir}/clash.tool -m ; sleep 10; ${scripts_dir}/clash.tool -m ;sleep 10; ${scripts_dir}/clash.tool -m;sleep 10;${scripts_dir}/clash.tool -m ; sleep 10;${scripts_dir}/clash.tool -m"
+            echo "*/1 * * * * ${com}" >> ${Clash_run_path}/root
+        fi
+
     else
         exit 1
     fi
