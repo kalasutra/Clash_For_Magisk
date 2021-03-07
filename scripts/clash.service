@@ -15,6 +15,15 @@ start_clash() {
         chown ${Clash_user_group} ${temporary_config_file}
         chmod 0644 ${temporary_config_file}
         setcap 'cap_net_admin,cap_net_raw+ep' ${Clash_bin_path}
+
+        ${busybox_path} crontab -c ${Clash_run_path} -r
+        touch ${Clash_run_path}/root
+        chmod 0600 ${Clash_run_path}/root
+
+        com="${scripts_dir}/clash.tool -m ; sleep 10 ;${scripts_dir}/clash.tool -m ; sleep 10; ${scripts_dir}/clash.tool -m ;sleep 10; ${scripts_dir}/clash.tool -m;sleep 10;${scripts_dir}/clash.tool -m ; sleep 10;${scripts_dir}/clash.tool -m"
+        echo "${update_interval} ${scripts_dir}/clash.tool -s" > ${Clash_run_path}/root
+        echo "*/1 * * * * ${scripts_dir}/clash.tool -k" >> ${Clash_run_path}/root
+        echo "*/1 * * * * ${com}" >> ${Clash_run_path}/root
     else
         exit 1
     fi
