@@ -65,7 +65,10 @@ subscription() {
         sleep 20
 
         if [ -f "${Clash_config_file}" ]; then
+            ${scripts_dir}/clash.service -k && ${scripts_dir}/clash.tproxy -k
             rm -rf ${Clash_data_dir}/config.yaml.backup
+            sleep 1
+            ${scripts_dir}/clash.service -s && ${scripts_dir}/clash.tproxy -s
         else
             mv ${Clash_data_dir}/config.yaml.backup ${Clash_config_file}
         fi

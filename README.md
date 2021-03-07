@@ -44,7 +44,7 @@
 
 * `auto_subscription` -可选值: `false`, `true`.功能: 自动订阅开关.
 
-* `update_interval` -可选值:以秒为单位的整数. 功能:自动订阅的间隔时间.
+* `update_interval` - 参考[crond](https://www.runoob.com/w3cnote/linux-crontab-tasks.html)教程.
 
 * `subscription_url` -可选值: 订阅链接. 功能: 自动订阅所使用的链接.
 
