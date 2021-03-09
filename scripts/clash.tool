@@ -35,7 +35,10 @@ monitor_local_ipv4() {
 
         unset a_subnet
         unset b_subnet
+
+        echo "info: 绕过本地ip段的iptables规则已更新." >> ${CFM_logs_file}
     else
+        echo "info: 本地ip段无变化,不做处理." >> ${CFM_logs_file}
         exit 0
     fi
 
@@ -69,8 +72,14 @@ subscription() {
             rm -rf ${Clash_data_dir}/config.yaml.backup
             sleep 1
             ${scripts_dir}/clash.service -s && ${scripts_dir}/clash.tproxy -s
+            if [ "$?" = "0" ] ; then
+                echo "info: 订阅更新成功,CFM已成功重启." >> ${CFM_logs_file}
+            else
+                echo "err: 订阅更新成功,CFM重启失败." >> ${CFM_logs_file}
+            fi
         else
             mv ${Clash_data_dir}/config.yaml.backup ${Clash_config_file}
+            echo "war: 订阅更新失败,配置文件已恢复.." >> ${CFM_logs_file}
         fi
     else
         exit 0
@@ -85,6 +94,7 @@ find_packages_uid() {
     fi
     for package in `cat ${filter_packages_file} | sort -u` ; do
         awk '$1~/'^"${package}"$'/{print $2}' ${system_packages_file} >> ${appuid_file}
+        echo "info: ${package}已过滤." >> ${CFM_logs_file}
     done
 }
 
@@ -100,8 +110,10 @@ port_detection() {
     done
 
     if [ ${match_count} -ge 2 ] ; then
+        echo "info: tproxy和dns端口已启动." >> ${CFM_logs_file}
         exit 0
     else
+        echo "err: tproxy和dns端口未启动." >> ${CFM_logs_file}
         exit 1
     fi
 }
@@ -109,7 +121,11 @@ port_detection() {
 while getopts ":kfmps" signal ; do
     case ${signal} in
         s)
-            subscription
+            if [ -f "${Clash_pid_file}" ] ; then
+                subscription
+            else
+                echo "info: CFM未启动,订阅不更新." >> ${CFM_logs_file}
+            fi
             ;;
         k)
             if [ "${mode}" = "blacklist" ] || [ "${mode}" = "whitelist" ] ; then

@@ -5,8 +5,16 @@ scripts_dir=`dirname ${scripts}`
 . /data/clash/clash.config
 
 start_clash() {
+    pid=`cat ${Clash_pid_file}`
+    if (cat /proc/${pid}/cmdline | grep -q clash) ; then
+        echo "info: 检测到clash已启动,此次不启动." >> ${CFM_logs_file}
+        exit 1
+    fi
+
     cat ${template_file} > ${temporary_config_file} && echo '\n' >> ${temporary_config_file}
     sed -n -E '/^proxies:$/,$p' ${Clash_config_file} >> ${temporary_config_file}
+
+    echo "" > ${CFM_logs_file}
 
     if [ -f "${Clash_bin_path}" ] ; then
         mkdir -p ${Clash_run_path}
@@ -20,15 +28,18 @@ start_clash() {
         touch ${Clash_run_path}/root
         chmod 0600 ${Clash_run_path}/root
 
-        echo "${update_interval} ${scripts_dir}/clash.tool -s" > ${Clash_run_path}/root
-        echo "*/1 * * * * ${scripts_dir}/clash.tool -k" >> ${Clash_run_path}/root
+        echo "${update_interval} ${scripts_dir}/clash.tool -s" > ${Clash_run_path}/root \
+        && echo "info: 自动订阅定时已开启." >> ${CFM_logs_file}
+        echo "*/1 * * * * ${scripts_dir}/clash.tool -k" >> ${Clash_run_path}/root \
+        && echo "info: dns保持已打开." >> ${CFM_logs_file}
 
         if [ "${filter_local}" = "true" ] ; then
             com="${scripts_dir}/clash.tool -m ; sleep 10 ;${scripts_dir}/clash.tool -m ; sleep 10; ${scripts_dir}/clash.tool -m ;sleep 10; ${scripts_dir}/clash.tool -m;sleep 10;${scripts_dir}/clash.tool -m ; sleep 10;${scripts_dir}/clash.tool -m"
-            echo "*/1 * * * * ${com}" >> ${Clash_run_path}/root
+            echo "*/1 * * * * ${com}" >> ${Clash_run_path}/root && echo "info: 自动绕过本地ip段已打开." >> ${CFM_logs_file}
         fi
 
     else
+        echo "err: 内核丢失." >> ${CFM_logs_file}
         exit 1
     fi
 
@@ -36,12 +47,14 @@ start_clash() {
         if $(${Clash_bin_path} -d ${Clash_data_dir} -t -f ${temporary_config_file} > /dev/null) ; then
             nohup ${Clash_bin_path} -d ${Clash_data_dir} -f ${temporary_config_file} > /dev/null 2>&1 &
             echo -n $! > ${Clash_pid_file}
+            echo "info: 内核已启动." >> ${CFM_logs_file}
         fi
     fi
 
     if ! (${scripts_dir}/clash.tool -p) ; then
         kill -15 `cat ${Clash_pid_file}`
         rm -rf ${Clash_pid_file}
+        echo "err: 端口未检测到,已停止clash内核以及后续逻辑." >> ${CFM_logs_file}
         exit 1
     fi
 }
@@ -49,6 +62,7 @@ start_clash() {
 stop_clash() {
     kill -15 `cat ${Clash_pid_file}`
     rm -rf ${Clash_pid_file}
+    echo "info: 停止内核." >> ${CFM_logs_file}
 }
 
 while getopts ":sk" signal ; do
