@@ -15,13 +15,17 @@ dns:
         - 1.1.1.1
     enhanced-mode: redir-host
     nameserver:
+        - https://rubyfish.cn/dns-query
         - https://dns.alidns.com/dns-query
         - https://doh.pub/dns-query
     fallback:
+        - https://dns64.cloudflare-dns.com/dns-query
+        - https://dns64.dns.google/dns-query
         - https://dns.google/dns-query
         - https://cloudflare-dns.com/dns-query
         - https://doh.opendns.com/dns-query
         - https://dns.adguard.com/dns-query
+        - https://doh.dns.sb/dns-query
     fallback-filter:
         geoip: true
         ipcidr:
