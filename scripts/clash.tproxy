@@ -119,7 +119,7 @@ apply_rules() {
     ${iptables_wait} -t nat -A PREROUTING -j FILTER_PRE_DNS
     ${iptables_wait} -t nat -A OUTPUT -j FILTER_OUT_DNS
 
-    ${scripts_dir}/clash.too -m
+    ${scripts_dir}/clash.tool -m
 
     ip6tables -w 100 -t filter -A OUTPUT -p udp --dport 53 -m owner ! --gid-owner ${Clash_group} -j DROP && echo "info: 本机ipv6 dns已禁用." >> ${CFM_logs_file}
     ip6tables -w 100 -t filter -A PREROUTING -p udp --dport 53 -j DROP && echo "info: 热点ipv6 dns已禁用." >> ${CFM_logs_file}

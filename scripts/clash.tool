@@ -124,7 +124,9 @@ while getopts ":kfmps" signal ; do
             if [ -f "${Clash_pid_file}" ] ; then
                 subscription
             else
-                echo "info: CFM未启动,订阅不更新." >> ${CFM_logs_file}
+                ${scripts_dir}/clash.service -s && ${scripts_dir}/clash.tproxy -s
+                subscription
+                ${scripts_dir}/clash.service -k && ${scripts_dir}/clash.tproxy -k
             fi
             ;;
         k)
