@@ -14,6 +14,12 @@ if [ -d "${CPFM_mode_dir}" ] ; then
     touch ${CPFM_mode_dir}/remove && ui_print "- CPFM模块在重启后将会被删除."
 fi
 
+curl_pr() {
+    if ! (curl -V > /dev/null 2>&1) ; then
+        return 0
+    fi
+}
+
 case "${ARCH}" in
     arm)
         architecture="armv7"
@@ -31,7 +37,9 @@ esac
 
 mkdir -p ${MODPATH}/system/bin
 mkdir -p ${clash_data_dir}
-mkdir -p ${MODPATH}${ca_path}
+if curl_pr ; then
+    mkdir -p ${MODPATH}${ca_path}
+fi
 
 unzip -o "${ZIPFILE}" -x 'META-INF/*' -d $MODPATH >&2
 
@@ -53,7 +61,12 @@ else
 fi
 
 tar -xjf ${MODPATH}/binary/${ARCH}.tar.bz2 -C ${MODPATH}/system/bin/
-mv ${MODPATH}/cacert.pem ${MODPATH}${ca_path}
+if curl_pr ; then
+    mv ${MODPATH}/cacert.pem ${MODPATH}${ca_path}
+else
+    rm -rf ${MODPATH}/system/bin/curl
+    rm -rf ${MODPATH}/cacert.pem
+fi
 rm -rf ${MODPATH}/binary
 
 if [ ! -f "${clash_data_dir}/packages.list" ] ; then

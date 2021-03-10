@@ -53,8 +53,9 @@ keep_dns() {
     local_dns=`getprop net.dns1`
 
     if [ "${local_dns}" != "${static_dns}" ] ; then
-        sleep 5
-        setprop net.dns1 ${static_dns}
+        for count in $(seq 1 $(getprop | grep dns | wc -l)); do
+            setprop net.dns${count} ${static_dns}
+        done
     fi
 
     unset local_dns
@@ -124,9 +125,9 @@ while getopts ":kfmps" signal ; do
             if [ -f "${Clash_pid_file}" ] ; then
                 subscription
             else
-                ${scripts_dir}/clash.service -s && ${scripts_dir}/clash.tproxy -s
-                subscription
-                ${scripts_dir}/clash.service -k && ${scripts_dir}/clash.tproxy -k
+                ${scripts_dir}/clash.service -s && ${scripts_dir}/clash.tproxy -s \
+                && subscription \
+                && ${scripts_dir}/clash.service -k && ${scripts_dir}/clash.tproxy -k
             fi
             ;;
         k)
