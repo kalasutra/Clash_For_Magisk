@@ -146,7 +146,7 @@ flush_rules() {
     ${iptables_wait} -t mangle -F FILTER_LOCAL_IP
     ${iptables_wait} -t mangle -X FILTER_LOCAL_IP
 
-    ${iptables_wait} -t mangle -A PREROUTING -p tcp -m socket -j DIVERT
+    ${iptables_wait} -t mangle -D PREROUTING -p tcp -m socket -j DIVERT
     ${iptables_wait} -t mangle -F DIVERT
     ${iptables_wait} -t mangle -X DIVERT
 

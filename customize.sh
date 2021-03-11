@@ -1,5 +1,6 @@
 SKIPUNZIP=1
 
+status=""
 architecture=""
 system_gid="1000"
 system_uid="1000"
@@ -14,11 +15,11 @@ if [ -d "${CPFM_mode_dir}" ] ; then
     touch ${CPFM_mode_dir}/remove && ui_print "- CPFM模块在重启后将会被删除."
 fi
 
-curl_pr() {
-    if ! (curl -V > /dev/null 2>&1) ; then
-        return 0
-    fi
-}
+if ! (curl -V > /dev/null 2>&1) ; then
+    status="false"
+else
+    status="true"
+fi
 
 case "${ARCH}" in
     arm)
@@ -37,7 +38,7 @@ esac
 
 mkdir -p ${MODPATH}/system/bin
 mkdir -p ${clash_data_dir}
-if curl_pr ; then
+if [ "${status}" = "false" ] ; then
     mkdir -p ${MODPATH}${ca_path}
 fi
 
@@ -61,7 +62,7 @@ else
 fi
 
 tar -xjf ${MODPATH}/binary/${ARCH}.tar.bz2 -C ${MODPATH}/system/bin/
-if curl_pr ; then
+if [ "${status}" = "false" ] ; then
     mv ${MODPATH}/cacert.pem ${MODPATH}${ca_path}
 else
     rm -rf ${MODPATH}/system/bin/curl
@@ -80,8 +81,12 @@ set_perm_recursive ${MODPATH} 0 0 0755 0644
 set_perm  ${MODPATH}/system/bin/setcap  0  0  0755
 set_perm  ${MODPATH}/system/bin/getcap  0  0  0755
 set_perm  ${MODPATH}/system/bin/getpcaps  0  0  0755
-set_perm  ${MODPATH}${ca_path}/cacert.pem 0 0 0644
-set_perm  ${MODPATH}/system/bin/curl 0 0 0755
+
+if [ "${status}" = "false" ] ; then
+    set_perm  ${MODPATH}${ca_path}/cacert.pem 0 0 0644
+    set_perm  ${MODPATH}/system/bin/curl 0 0 0755
+fi
+
 set_perm_recursive ${MODPATH}/scripts ${system_uid} ${system_gid} 0755 0755
 set_perm_recursive ${clash_data_dir} ${system_uid} ${system_gid} 0755 0644
 set_perm  ${MODPATH}/system/bin/clash  ${system_uid}  ${system_gid}  6755
