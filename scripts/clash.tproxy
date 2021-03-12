@@ -32,7 +32,7 @@ create_mangle_prerouting_filter() {
     ${iptables_wait} -t mangle -N FILTER_PRE_CLASH
 
     for subnet in ${reserved_ip[*]} ; do
-        ${iptables_wait} -t mangle -A FILTER_PRE_CLASH -d ${subnet} -j RETURN
+        ${iptables_wait} -t mangle -A FILTER_PRE_CLASH -d ${subnet} -j ACCEPT
     done
 
     ${iptables_wait} -t mangle -A FILTER_PRE_CLASH -j CLASH_PRE
@@ -44,12 +44,12 @@ create_mangle_output_filter() {
     ${iptables_wait} -t mangle -N FILTER_OUT_CLASH
 
     for subnet in ${reserved_ip[*]} ; do
-        ${iptables_wait} -t mangle -A FILTER_OUT_CLASH -d ${subnet} -j RETURN
+        ${iptables_wait} -t mangle -A FILTER_OUT_CLASH -d ${subnet} -j ACCEPT
     done
 
     if [ "${mode}" = "blacklist" ] ; then
         for appuid in `cat ${appuid_file} | sort -u` ; do
-            ${iptables_wait} -t mangle -A FILTER_OUT_CLASH -m owner --uid-owner ${appuid} -j RETURN
+            ${iptables_wait} -t mangle -A FILTER_OUT_CLASH -m owner --uid-owner ${appuid} -j ACCEPT
         done
 
         ${iptables_wait} -t mangle -A FILTER_OUT_CLASH -m owner ! --gid-owner ${Clash_group} -j CLASH_OUT
@@ -75,7 +75,7 @@ create_nat_output_dns() {
 create_nat_output_filter() {
     ${iptables_wait} -t nat -N FILTER_OUT_DNS
 
-    ${iptables_wait} -t nat -A FILTER_OUT_DNS -m owner --gid-owner ${Clash_group} -j RETURN
+    ${iptables_wait} -t nat -A FILTER_OUT_DNS -m owner --gid-owner ${Clash_group} -j ACCEPT
     ${iptables_wait} -t nat -A FILTER_OUT_DNS -p udp --dport 53 -j DNS_OUT
 }
 

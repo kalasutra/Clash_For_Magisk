@@ -88,14 +88,14 @@ subscription() {
 }
 
 find_packages_uid() {
-    if [ "${mode}" = "blacklist" ] ; then
-        echo "1000 1001 1010 1014 1016" > ${appuid_file}
-    elif [ "${mode}" = "whitelist" ] ; then
-        echo "" > ${appuid_file}
-    fi
+    echo "" > ${appuid_file}
     for package in `cat ${filter_packages_file} | sort -u` ; do
         awk '$1~/'^"${package}"$'/{print $2}' ${system_packages_file} >> ${appuid_file}
-        echo "info: ${package}已过滤." >> ${CFM_logs_file}
+        if [ "${mode}" = "blacklist" ] ; then
+            echo "info: ${package}已过滤." >> ${CFM_logs_file}
+        elif [ "${mode}" = "whitelist" ] ; then
+            echo "info: ${package}已代理." >> ${CFM_logs_file}
+        fi
     done
 }
 
