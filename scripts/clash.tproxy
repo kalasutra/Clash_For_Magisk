@@ -24,7 +24,8 @@ create_mangle_prerouting_chain() {
 create_mangle_output_chain() {
     ${iptables_wait} -t mangle -N CLASH_OUT
 
-    ${iptables_wait} -t mangle -A CLASH_OUT -m owner --gid-owner ${bypass_id} -j RETURN
+    ${iptables_wait} -t mangle -A CLASH_OUT -p tcp -j MARK --set-mark ${mark_id}
+    ${iptables_wait} -t mangle -A CLASH_OUT -p udp -j MARK --set-mark ${mark_id}
 }
 
 create_mangle_prerouting_filter() {
@@ -41,6 +42,7 @@ create_mangle_output_filter() {
     ${scripts_dir}/clash.tool -f
 
     ${iptables_wait} -t mangle -N FILTER_OUT_CLASH
+    ${iptables_wait} -t mangle -A FILTER_OUT_CLASH -m owner --gid-owner ${bypass_id} -j RETURN
 
     for subnet in ${reserved_ip[*]} ; do
         ${iptables_wait} -t mangle -A FILTER_OUT_CLASH -d ${subnet} -j ACCEPT
