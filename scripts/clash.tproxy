@@ -42,7 +42,6 @@ create_mangle_output_filter() {
     ${scripts_dir}/clash.tool -f
 
     ${iptables_wait} -t mangle -N FILTER_OUT_CLASH
-    ${iptables_wait} -t mangle -A FILTER_OUT_CLASH -m owner --gid-owner ${bypass_id} -j RETURN
 
     for subnet in ${reserved_ip[*]} ; do
         ${iptables_wait} -t mangle -A FILTER_OUT_CLASH -d ${subnet} -j ACCEPT
@@ -112,10 +111,10 @@ apply_rules() {
 
     ${iptables_wait} -t mangle -N FILTER_LOCAL_IP
     ${iptables_wait} -t mangle -A PREROUTING -j FILTER_LOCAL_IP
-    ${iptables_wait} -t mangle -A OUTPUT -j FILTER_LOCAL_IP
+    ${iptables_wait} -t mangle -A OUTPUT -m owner ! --gid-owner ${Clash_group} -j FILTER_LOCAL_IP
 
     ${iptables_wait} -t mangle -A PREROUTING -j FILTER_PRE_CLASH
-    ${iptables_wait} -t mangle -A OUTPUT -j FILTER_OUT_CLASH
+    ${iptables_wait} -t mangle -A OUTPUT -m owner ! --gid-owner ${Clash_group} -j FILTER_OUT_CLASH
 
     ${iptables_wait} -t nat -A PREROUTING -j FILTER_PRE_DNS
     ${iptables_wait} -t nat -A OUTPUT -j FILTER_OUT_DNS
