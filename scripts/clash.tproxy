@@ -111,10 +111,10 @@ apply_rules() {
 
     ${iptables_wait} -t mangle -N FILTER_LOCAL_IP
     ${iptables_wait} -t mangle -A PREROUTING -j FILTER_LOCAL_IP
-    ${iptables_wait} -t mangle -A OUTPUT -m owner ! --gid-owner ${Clash_group} -j FILTER_LOCAL_IP
+    ${iptables_wait} -t mangle -A OUTPUT -j FILTER_LOCAL_IP
 
     ${iptables_wait} -t mangle -A PREROUTING -j FILTER_PRE_CLASH
-    ${iptables_wait} -t mangle -A OUTPUT -m owner ! --gid-owner ${Clash_group} -j FILTER_OUT_CLASH
+    ${iptables_wait} -t mangle -A OUTPUT -j FILTER_OUT_CLASH
 
     ${iptables_wait} -t nat -A PREROUTING -j FILTER_PRE_DNS
     ${iptables_wait} -t nat -A OUTPUT -j FILTER_OUT_DNS
