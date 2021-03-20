@@ -76,7 +76,18 @@ create_nat_output_filter() {
     ${iptables_wait} -t nat -N FILTER_OUT_DNS
 
     ${iptables_wait} -t nat -A FILTER_OUT_DNS -m owner --gid-owner ${Clash_group} -j ACCEPT
-    ${iptables_wait} -t nat -A FILTER_OUT_DNS -p udp --dport 53 -j DNS_OUT
+    if [ "${mode}" = "blacklist" ] ; then
+        for appuid in `cat ${appuid_file} | sort -u` ; do
+            ${iptables_wait} -t nat -A FILTER_OUT_DNS -m owner --uid-owner ${appuid} -j ACCEPT
+        done
+
+        ${iptables_wait} -t nat -A FILTER_OUT_DNS -p udp --dport 53 -j DNS_OUT
+    elif [ "${mode}" = "whitelist" ] ; then
+        for appuid in `cat ${appuid_file} | sort -u` ; do
+            ${iptables_wait} -t nat -A FILTER_OUT_CLASH -m owner --uid-owner ${appuid} -j DNS_OUT
+        done
+    fi
+    
 }
 
 create_nat_prerouting_filter() {
