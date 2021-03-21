@@ -62,15 +62,12 @@ keep_dns() {
 }
 
 subscription() {
-    if [ "${auto_subscription}" = "true" ] ; then
-        mv -f ${Clash_config_file} ${Clash_data_dir}/config.yaml.backup
-        curl -L -A 'clash' ${subscription_url} -o ${Clash_config_file} >> /dev/null 2>&1
-
-        sleep 20
-
-        if [ -f "${Clash_config_file}" ]; then
+    if [ "${auto_subscription}" = "true"  -a ! -z ${subscription_url} ] ; then
+        updateFileDir=`"${Clash_data_dir}/config.yaml.update"
+        curl -m 20 -L -A 'clash' "${subscription_url}" -o ${updateFileDir} >> /dev/null 2>&1
+        if [ ! -n "${updateFileDir}" ]; then
+            mv -f ${updateFileDir} ${Clash_config_file} 
             ${scripts_dir}/clash.service -k && ${scripts_dir}/clash.tproxy -k
-            rm -rf ${Clash_data_dir}/config.yaml.backup
             sleep 1
             ${scripts_dir}/clash.service -s && ${scripts_dir}/clash.tproxy -s
             if [ "$?" = "0" ] ; then
@@ -86,6 +83,7 @@ subscription() {
         exit 0
     fi
 }
+
 
 find_packages_uid() {
     echo "" > ${appuid_file}
