@@ -14,6 +14,12 @@ until [ -d "/data/clash" ] ; do
     sleep 1
 done
 
+until (ss --help > /dev/null 2>&1) || (netstat --help > /dev/null 2>&1) ; do
+    sleep 5
+done
+
+sleep 5
+
 if [ -f ${Clash_pid_file} ] ; then
     rm -rf ${Clash_pid_file}
 fi

@@ -111,7 +111,7 @@ port_detection() {
 
     for sub_port in ${clash_port[*]} ; do
         sleep 0.5
-        echo "info:检测到端口:${sub_port}"
+        echo "info:检测到端口:${sub_port}" >> ${CFM_logs_file}
         if [ "${sub_port}" = ${Clash_tproxy_port} ] || [ "${sub_port}" = ${Clash_dns_port} ] ; then
             match_count=$((${match_count} + 1))
         fi

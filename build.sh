@@ -7,4 +7,4 @@ zip -r Clash_For_Magisk.zip binary cacert.pem clash.config customize.sh META-INF
 
 yarn install
 yarn build
-# 这是一个备份
+# 这是一个备份,预计以后写成脚本
