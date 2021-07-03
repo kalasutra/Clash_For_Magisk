@@ -121,20 +121,10 @@ apply_rules() {
 
     ${scripts_dir}/clash.tool -m
 
-    if [ "${ipv6_iptables}" = "true" ] ; then
-        ip6tables -w 100 -t filter -A OUTPUT -p udp --dport 53 -m owner ! --gid-owner ${Clash_group} -j REJECT && echo "info: 本机ipv6 dns已禁用." >> ${CFM_logs_file}
-        ip6tables -w 100 -t filter -A PREROUTING -p udp --dport 53 -j REJECT && echo "info: 热点ipv6 dns已禁用." >> ${CFM_logs_file}
-    fi
-
     echo "info: iptables规则已应用." >> ${CFM_logs_file}
 }
 
 flush_rules() {
-    if [ "${ipv6_iptables}" = "true" ] ; then
-        ip6tables -w 100 -t filter -D OUTPUT -p udp --dport 53 -m owner ! --gid-owner ${Clash_group} -j REJECT && echo "info: 本机ipv6 dns不再禁用." >> ${CFM_logs_file}
-        ip6tables -w 100 -t filter -D PREROUTING -p udp --dport 53 -j REJECT && echo "info: 热点ipv6 dns不再禁用." >> ${CFM_logs_file}
-    fi
-
     ${iptables_wait} -t nat -D OUTPUT -j FILTER_OUT_DNS
     ${iptables_wait} -t nat -D PREROUTING -j FILTER_PRE_DNS
 

@@ -5,6 +5,19 @@ scripts_dir=`dirname ${scripts}`
 . /data/clash/clash.config
 
 start_clash() {
+
+    if [ "${ipv6}" = "false" ] ; then
+        for net in /proc/sys/net/ipv6/conf/* ; do
+            echo 0 > {$net}/accept_ra
+            echo 1 > ${net}/disable_ipv6
+        done
+    else
+        for net in /proc/sys/net/ipv6/conf/* ; do
+            echo 1 > {$net}/accept_ra
+            echo 0 > ${net}/disable_ipv6
+        done
+    fi
+
     pid=`cat ${Clash_pid_file} 2> /dev/null`
     if (cat /proc/${pid}/cmdline | grep -q clash) ; then
         echo "info: 检测到clash已启动,此次不启动." >> ${CFM_logs_file}
@@ -37,7 +50,6 @@ start_clash() {
             com="${scripts_dir}/clash.tool -m ; sleep 10 ;${scripts_dir}/clash.tool -m ; sleep 10; ${scripts_dir}/clash.tool -m ;sleep 10; ${scripts_dir}/clash.tool -m;sleep 10;${scripts_dir}/clash.tool -m ; sleep 10;${scripts_dir}/clash.tool -m"
             echo "*/1 * * * * ${com}" >> ${Clash_run_path}/root && echo "info: 自动绕过本地ip段已打开." >> ${CFM_logs_file}
         fi
-
     else
         echo "err: clash内核丢失." >> ${CFM_logs_file}
         exit 1
@@ -50,6 +62,8 @@ start_clash() {
             echo "info: clash内核已启动." >> ${CFM_logs_file}
         fi
     fi
+
+    sleep 3
 
     if ! (${scripts_dir}/clash.tool -p) ; then
         kill -15 `cat ${Clash_pid_file}`

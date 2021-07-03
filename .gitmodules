@@ -1,3 +1,6 @@
 [submodule "clash-dashboard"]
 	path = clash-dashboard
 	url = https://github.com/Dreamacro/clash-dashboard.git
+[submodule "clash"]
+	path = clash
+	url = https://github.com/Dreamacro/clash.git

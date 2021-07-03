@@ -101,15 +101,17 @@ find_packages_uid() {
 
 port_detection() {
     clash_pid=`cat ${Clash_pid_file}`
-    clash_port=$(ss -antup | grep "clash" | awk '$7~/'pid="${clash_pid}"*'/{print $5}' | awk -F ':' '{print $2}' | sort -u)
     match_count=0
 
     if ! (ss -h > /dev/null 2>&1) ; then
         clash_port=$(netstat -antup | grep "clash" | awk '$7~/'"${clash_pid}"*'/{print $5}' | awk -F ':' '{print $2}' | sort -u)
+    else
+        clash_port=$(ss -antup | grep "clash" | awk '$7~/'pid="${clash_pid}"*'/{print $5}' | awk -F ':' '{print $2}' | sort -u)
     fi
 
     for sub_port in ${clash_port[*]} ; do
         sleep 0.5
+        echo "info:检测到端口:${sub_port}"
         if [ "${sub_port}" = ${Clash_tproxy_port} ] || [ "${sub_port}" = ${Clash_dns_port} ] ; then
             match_count=$((${match_count} + 1))
         fi
