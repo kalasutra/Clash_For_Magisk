@@ -8,12 +8,12 @@ start_clash() {
 
     if [ "${ipv6}" = "false" ] ; then
         for net in /proc/sys/net/ipv6/conf/* ; do
-            echo 0 > {$net}/accept_ra
+            echo 0 > ${net}/accept_ra
             echo 1 > ${net}/disable_ipv6
         done
     else
         for net in /proc/sys/net/ipv6/conf/* ; do
-            echo 1 > {$net}/accept_ra
+            echo 1 > ${net}/accept_ra
             echo 0 > ${net}/disable_ipv6
         done
     fi
@@ -23,11 +23,19 @@ start_clash() {
         echo "info: 检测到clash已启动,此次不启动." >> ${CFM_logs_file}
         exit 1
     fi
+    
+    sed -i '/^[  ]*$/d' ${template_file}
+    cp -f ${template_file} ${temporary_config_file}.swp
+    
+    while [ $(du ${temporary_config_file}.swp | awk '{print $1}') = $(du ${template_file} | awk '{print $1}') ] ; do
+        sleep 1
+        cp -f ${template_file} ${temporary_config_file}.swp && echo "\n" >> ${temporary_config_file}.swp
+        sed -n -E '/^proxies:$/,$p' ${Clash_config_file} >> ${temporary_config_file}.swp
+        sed -i '/^[  ]*$/d' ${temporary_config_file}.swp
+    done
 
-    cat ${template_file} > ${temporary_config_file} && echo '\n' >> ${temporary_config_file}
-    sed -n -E '/^proxies:$/,$p' ${Clash_config_file} >> ${temporary_config_file}
-
-    echo "" > ${CFM_logs_file}
+    mv -f ${temporary_config_file}.swp ${temporary_config_file} \
+    && echo "" > ${CFM_logs_file} || echo "err:配置文件合并失败"
 
     if [ -f "${Clash_bin_path}" ] ; then
         mkdir -p ${Clash_run_path}
@@ -46,6 +54,7 @@ start_clash() {
         echo "*/1 * * * * ${scripts_dir}/clash.tool -k" >> ${Clash_run_path}/root \
         && echo "info: dns保持已打开." >> ${CFM_logs_file}
 
+        sed -i '/^[  ]*$/d' ${CFM_logs_file}
         if [ "${filter_local}" = "true" ] ; then
             com="${scripts_dir}/clash.tool -m ; sleep 10 ;${scripts_dir}/clash.tool -m ; sleep 10; ${scripts_dir}/clash.tool -m ;sleep 10; ${scripts_dir}/clash.tool -m;sleep 10;${scripts_dir}/clash.tool -m ; sleep 10;${scripts_dir}/clash.tool -m"
             echo "*/1 * * * * ${com}" >> ${Clash_run_path}/root && echo "info: 自动绕过本地ip段已打开." >> ${CFM_logs_file}

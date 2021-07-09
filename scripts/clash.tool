@@ -104,7 +104,7 @@ port_detection() {
     match_count=0
 
     if ! (ss -h > /dev/null 2>&1) ; then
-        clash_port=$(netstat -antup | grep "clash" | awk '$7~/'"${clash_pid}"*'/{print $5}' | awk -F ':' '{print $2}' | sort -u)
+        clash_port=$(netstat -anlp | grep -v p6 | grep "clash" | awk '$6~/'"${clash_pid}"*'/{print $4}' | awk -F ':' '{print $2}' | sort -u)
     else
         clash_port=$(ss -antup | grep "clash" | awk '$7~/'pid="${clash_pid}"*'/{print $5}' | awk -F ':' '{print $2}' | sort -u)
     fi
