@@ -108,6 +108,7 @@ apply_rules() {
 
     creat_pre_divert
     ${iptables_wait} -t mangle -A PREROUTING -p tcp -m socket -j DIVERT
+    ${iptables_wait} -t mangle -A PREROUTING -p udp -m socket -j DIVERT
 
     ${iptables_wait} -t mangle -N FILTER_LOCAL_IP
     ${iptables_wait} -t mangle -A PREROUTING -j FILTER_LOCAL_IP

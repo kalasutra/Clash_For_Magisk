@@ -58,6 +58,10 @@ keep_dns() {
         done
     fi
 
+    if [ $(sysctl net.ipv4.ip_forward) != "1" ] ; then
+        sysctl -w net.ipv4.ip_forward=1
+    fi
+
     unset local_dns
 }
 
