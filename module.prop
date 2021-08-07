@@ -1,6 +1,6 @@
 id=Clash_For_Magisk
 name=Clash For Magisk
-version=v1.4.2
-versionCode=20210206
+version=v1.6.2
+versionCode=20210716
 author=kalasutra
-description=利用tproxy支持Clash的透明代理.
+description=利用tproxy支持Clash的透明代理.哎,可恶的半残安卓!!!

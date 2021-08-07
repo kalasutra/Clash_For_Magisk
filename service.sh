@@ -14,6 +14,10 @@ if [ -f ${Clash_pid_file} ] ; then
     rm -rf ${Clash_pid_file}
 fi
 
+until [ -f ${Clash_data_dir}/clash.config ] ; do
+    sleep 1
+done
+
 nohup ${busybox_path} crond -c ${Clash_run_path} > /dev/null 2>&1 &
 
 ${scripts_dir}/clash.service -s && ${scripts_dir}/clash.tproxy -s

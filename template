@@ -18,7 +18,5 @@ dns:
         - https://doh.opendns.com/dns-query
         - https://dns.adguard.com/dns-query
         - https://doh.dns.sb/dns-query
-        - https://dns64.cloudflare-dns.com/dns-query
-        - https://dns64.dns.google/dns-query
         - https://dns.google/dns-query
         - https://cloudflare-dns.com/dns-query
